@@ -72,6 +72,7 @@ public class I18nUtils {
         resource.setDefaultEncoding(StandardCharsets.UTF_8.name());
         resource.setBasename("i18n/message_" + module);
         resource.setUseCodeAsDefaultMessage(true);
+        resource.setDefaultLocale(Locale.ENGLISH);
         resources.put(module, resource);
         log.info("finish init i18n resource module: {}", module);
     }

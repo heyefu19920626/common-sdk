@@ -4,8 +4,12 @@
 
 package com.tang;
 
+import com.tang.exception.BaseErrorCode;
+import com.tang.response.Response;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 单测启动类
@@ -15,8 +19,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @since 2023/12/2
  */
 @SpringBootApplication
+@RestController
 public class TestApplication {
     public static void main(String[] args) {
         SpringApplication.run(TestApplication.class);
+    }
+
+    @GetMapping("test")
+    public Response<String> test() {
+        return Response.fail(BaseErrorCode.SYSTEM_INTERNAL_ERROR);
     }
 }
