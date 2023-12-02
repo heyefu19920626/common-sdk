@@ -1,4 +1,4 @@
-package com.heyefu.i18n;
+package com.tang.i18n;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;

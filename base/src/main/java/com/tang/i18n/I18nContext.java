@@ -1,8 +1,8 @@
 /*
- * Copyright (c) Heyefu Technologies Co., Ltd. 2023-2023. All rights reserved.
+ * Copyright (c) TangAn Technologies Co., Ltd. 2023-2023. All rights reserved.
  */
 
-package com.heyefu.i18n;
+package com.tang.i18n;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,8 +11,8 @@ import java.util.Locale;
 /**
  * 国际化上下文
  *
- * @author heyefu
- * @version [2023/12/1]
+ * @author TangAn
+ * @version 0.1
  * @since 2023/12/1
  */
 @Slf4j

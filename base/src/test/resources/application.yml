@@ -1,0 +1,3 @@
+tang:
+  exception:
+    scan: com.tang.exception,co,com,com.tang,com.tan,cn.tt

@@ -10,7 +10,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.heyefu</groupId>
+    <groupId>com.tang</groupId>
     <artifactId>common-setting</artifactId>
     <version>1.0-SNAPSHOT</version>
 
