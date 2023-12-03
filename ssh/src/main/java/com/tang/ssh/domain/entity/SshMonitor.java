@@ -6,14 +6,18 @@ package com.tang.ssh.domain.entity;
 
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
+import com.tang.utils.CloseUtils;
 import com.tang.utils.ThreadUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.client.channel.ClientChannel;
+import org.apache.sshd.client.channel.ClientChannelEvent;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.Duration;
+import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -21,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * ssh通道，需要单独的线程去读取输出流
  * <p>
- * todo 超时机制
+ * todo 超时机制, 并发调用的问题，需要持续输出的命令（top）
  *
  * @author TangAn
  * @version 0.1
@@ -33,15 +37,15 @@ public class SshMonitor extends Thread implements Closeable {
 
     private boolean isOpen = true;
 
-    private boolean isCleanLoginData = false;
+    private boolean hasCleanLoginEcho = false;
 
-    private ClientChannel channel;
+    private final ClientChannel channel;
 
-    private OutputStream out;
+    private final OutputStream out;
 
-    private InputStream stand;
+    private final InputStream stand;
 
-    private InputStream error;
+    private final InputStream error;
 
     private final StringBuilder cache = new StringBuilder();
 
@@ -55,42 +59,89 @@ public class SshMonitor extends Thread implements Closeable {
 
     @Override
     public void run() {
+        Thread.currentThread()
+            .setName(STR. "shell-monitor-\{ this.sshParam.getHost() }-\{ System.currentTimeMillis() }" );
         log.info("start monitor {} ssh.", sshParam.getHost());
         while (isOpen) {
+            if (channel.isEofSignalled() || channel.isClosed()) {
+                log.error("{} shell channel close.", sshParam.getHost());
+                isOpen = false;
+                break;
+            }
             readFromChannelInput(stand, "stand");
             readFromChannelInput(error, "err");
             ThreadUtils.sleep(1, TimeUnit.SECONDS);
         }
-        log.info("end monitor {} ssh.", sshParam.getHost());
+        log.info("end monitor {} ssh. remain result:\n{}", sshParam.getHost(), getResult());
     }
 
     public void cleanLoginEcho() {
-        while (!isCleanLoginData && isCommandNotOver()) {
+        long startTime = System.currentTimeMillis();
+        while (!hasCleanLoginEcho && isCommandNotOver() && isNotTimeout(startTime)) {
             ThreadUtils.sleep(1, TimeUnit.SECONDS);
         }
         log.info("\n{}\n", getResult());
+        hasCleanLoginEcho = true;
+    }
+
+    private boolean isNotTimeout(long startTime) {
+        return System.currentTimeMillis() - startTime < TimeUnit.SECONDS.toMillis(sshParam.getTimeoutSecond());
     }
 
     public String sendCommand(String command) throws SshTangException {
         // 清空上一次的缓存
         if (!cache.isEmpty()) {
-            while (isCommandNotOver()) {
+            long startTime = System.currentTimeMillis();
+            while (isCommandNotOver() && isNotTimeout(startTime)) {
                 ThreadUtils.sleep(1, TimeUnit.SECONDS);
             }
             log.info("last cache: \n{}", getResult());
         }
+        send(command);
+        long startTime = System.currentTimeMillis();
+        while (isCommandNotOver() && isNotTimeout(startTime)) {
+            ThreadUtils.sleep(1, TimeUnit.SECONDS);
+        }
+        return getResult();
+    }
+
+    public void sendCommand(int code) throws SshTangException {
+        send(code);
+    }
+
+    private void send(int command) throws SshTangException {
+        check();
         try {
-            out.write(command.getBytes());
-            out.write("\n".getBytes());
+            out.write(command);
             out.flush();
+            channel.waitFor(EnumSet.of(ClientChannelEvent.OPENED), Duration.ofSeconds(sshParam.getTimeoutSecond()));
         } catch (IOException e) {
             log.error("send {} command error.", sshParam.getHost(), e);
             throw new SshTangException(SshErrorCode.SEND_COMMAND_ERROR);
         }
-        while (isCommandNotOver()) {
-            ThreadUtils.sleep(1, TimeUnit.SECONDS);
+    }
+
+    private void check() throws SshTangException {
+        if (channel.isClosed()) {
+            log.warn("channel is closed");
+            throw new SshTangException(SshErrorCode.CHANNEL_HAVE_CLOSED);
         }
-        return getResult();
+    }
+
+    private void send(String command) throws SshTangException {
+        check();
+        try {
+            out.write(command.getBytes());
+            out.write("\n".getBytes());
+            out.flush();
+            channel.waitFor(EnumSet.of(ClientChannelEvent.OPENED), Duration.ofSeconds(sshParam.getTimeoutSecond()));
+        } catch (IOException e) {
+            log.error("send {} command error.", sshParam.getHost(), e);
+            if (e.getMessage().contains("closed")) {
+                throw new SshTangException(SshErrorCode.CHANNEL_HAVE_CLOSED);
+            }
+            throw new SshTangException(SshErrorCode.SEND_COMMAND_ERROR);
+        }
     }
 
     private String getResult() {
@@ -104,7 +155,6 @@ public class SshMonitor extends Thread implements Closeable {
         // 有任意一个结束符匹配到，就算结束
         return sshParam.getOverSign().stream().noneMatch(overSign -> cache.toString().endsWith(overSign));
     }
-
 
     private void readFromChannelInput(InputStream in, String type) {
         try {
@@ -133,5 +183,6 @@ public class SshMonitor extends Thread implements Closeable {
     public void close() throws IOException {
         log.info("close {} ssh monitor.", sshParam.getHost());
         isOpen = false;
+        CloseUtils.close(out, error, stand, channel);
     }
 }

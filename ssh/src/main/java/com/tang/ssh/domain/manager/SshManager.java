@@ -5,13 +5,11 @@
 package com.tang.ssh.domain.manager;
 
 import com.tang.ssh.domain.entity.SshConnection;
-import com.tang.ssh.domain.entity.SshMonitor;
 import com.tang.ssh.domain.entity.SshParam;
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.client.SshClient;
-import org.apache.sshd.client.channel.ChannelShell;
 import org.apache.sshd.client.session.ClientSession;
 
 import java.io.IOException;
@@ -44,30 +42,15 @@ public class SshManager {
         ClientSession session;
         try {
             session = createSession(sshParam, client);
-            ChannelShell channel = createShellChannel(sshParam, session);
-            log.info("finish create ssh({}@{}:{}) session error.", sshParam.getUsername(), sshParam.getHost(),
+            SshConnection sshConnection = new SshConnection(sshParam, client, session);
+            log.info("finish create ssh({}@{}:{}) session.", sshParam.getUsername(), sshParam.getHost(),
                 sshParam.getPort());
-            SshMonitor monitor = new SshMonitor(sshParam, channel);
-            monitor.start();
-            monitor.cleanLoginEcho();
-            // 发送一个回车，将首次连接的命令都清掉
-            monitor.sendCommand("");
-            return SshConnection.builder().client(client).session(session).monitor(monitor).sshParam(sshParam).build();
+            return sshConnection;
         } catch (IOException e) {
             log.error("create ssh({}@{}:{}) session error.", sshParam.getUsername(), sshParam.getHost(),
                 sshParam.getPort(), e);
             throw new SshTangException(SshErrorCode.CREATE_SESSION_ERROR);
         }
-    }
-
-    private static ChannelShell createShellChannel(SshParam sshParam, ClientSession session) throws IOException {
-        ChannelShell channel = session.createShellChannel();
-        channel.setPtyType("bash");
-        channel.setPtyLines(Integer.MAX_VALUE);
-        channel.setPtyColumns(Integer.MAX_VALUE);
-        channel.setUsePty(true);
-        channel.open().verify(TimeUnit.SECONDS.toMillis(sshParam.getTimeoutSecond()));
-        return channel;
     }
 
     private static ClientSession createSession(SshParam sshParam, SshClient client) throws IOException {

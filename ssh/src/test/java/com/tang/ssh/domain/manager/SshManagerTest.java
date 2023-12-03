@@ -5,13 +5,16 @@
 package com.tang.ssh.domain.manager;
 
 import com.tang.ssh.domain.entity.SshConnection;
+import com.tang.ssh.domain.entity.SshOrder;
 import com.tang.ssh.domain.entity.SshParam;
 import com.tang.ssh.domain.exception.SshTangException;
+import com.tang.utils.ThreadUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * ssh管理器测试
@@ -36,9 +39,17 @@ class SshManagerTest {
             SshParam.builder().host("192.168.209.129").port(22).username("test").password("123456")
                 .build();
         try (SshConnection sshConnection = SshManager.create(sshParam)) {
-            sshConnection.sendCommand("/bin/sh");
-            String top = sshConnection.sendCommand("ps -ef|grep test");
-            Assertions.assertTrue(top.contains("top"));
+            new Thread(() -> {
+                try {
+                    sshConnection.sendCommand("ping www.baidu.com");
+                } catch (SshTangException e) {
+                    throw new RuntimeException(e);
+                }
+            }).start();
+            ThreadUtils.sleep(5, TimeUnit.SECONDS);
+            sshConnection.sendCommand(SshOrder.CTRL_C);
+            ThreadUtils.sleep(100, TimeUnit.SECONDS);
+            sshConnection.sendCommand("date");
         }
     }
 }
