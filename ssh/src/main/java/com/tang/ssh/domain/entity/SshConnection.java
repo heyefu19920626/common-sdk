@@ -7,6 +7,7 @@ package com.tang.ssh.domain.entity;
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
 import com.tang.utils.CloseUtils;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ChannelShell;
@@ -32,6 +33,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class SshConnection implements Closeable {
+    @Getter
     private final SshParam sshParam;
 
     private SshClient client;
@@ -41,6 +43,9 @@ public class SshConnection implements Closeable {
     private ChannelShell channelShell;
 
     private SshMonitor monitor;
+
+    @Getter
+    private boolean close = false;
 
     public SshConnection(SshParam sshParam, SshClient client, ClientSession session) throws SshTangException {
         this.client = client;
@@ -177,9 +182,10 @@ public class SshConnection implements Closeable {
 
     @Override
     public void close() throws IOException {
-        CloseUtils.close(monitor, session, client);
-        monitor = null;
-        session = null;
-        client = null;
+        CloseUtils.close(this.monitor, this.session, this.client);
+        this.monitor = null;
+        this.session = null;
+        this.client = null;
+        this.close = true;
     }
 }
