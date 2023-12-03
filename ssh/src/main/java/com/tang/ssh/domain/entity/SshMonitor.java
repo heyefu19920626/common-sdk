@@ -89,24 +89,28 @@ public class SshMonitor extends Thread implements Closeable {
     }
 
     public String sendCommand(String command) throws SshTangException {
-        // 清空上一次的缓存
-        if (!cache.isEmpty()) {
-            long startTime = System.currentTimeMillis();
-            while (isCommandNotOver() && isNotTimeout(startTime)) {
-                ThreadUtils.sleep(1, TimeUnit.SECONDS);
-            }
-            log.info("last cache: \n{}", getResult());
-        }
+        return sendCommand(command, false);
+    }
+
+    public String sendCommand(String command, boolean async) throws SshTangException {
         send(command);
+        if (async) {
+            return "";
+        }
+        return getEcho();
+    }
+
+    private String getEcho() {
         long startTime = System.currentTimeMillis();
-        while (isCommandNotOver() && isNotTimeout(startTime)) {
+        while (isOpen && isCommandNotOver() && isNotTimeout(startTime)) {
             ThreadUtils.sleep(1, TimeUnit.SECONDS);
         }
         return getResult();
     }
 
-    public void sendCommand(int code) throws SshTangException {
+    public String sendCommand(int code) throws SshTangException {
         send(code);
+        return getEcho();
     }
 
     private void send(int command) throws SshTangException {

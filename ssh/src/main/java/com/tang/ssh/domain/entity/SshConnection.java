@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  * 3、能够支持Ctrl+C等按键
  * 4、自动重连
  * <p>
- * todo 命令超时机制，top等命令的支持, 重连
+ * todo 命令超时机制，top等命令的支持, 并发执行命令(不能同时执行两个非并发命令)
  *
  * @author TangAn
  * @version 0.1
@@ -91,13 +91,16 @@ public class SshConnection implements Closeable {
 
     /**
      * 发送异步命令
+     * <p>
+     * 注意: 发送的异步命令，如果有回显，则会在下一次有效命令时返回
+     * <p>
+     * 比如,如果执行了ping命令，则只有发送ctrl+c才算有效命令，因为在ping过程中，其余命令不会执行
      *
      * @param command 需要发送的命令
-     * @return 命令的响应
      * @throws SshTangException 发送失败异常
      */
-    public String sendSyncCommand(String command) throws SshTangException {
-        return sendCommand(command, true, true, true);
+    public void sendCommandAsync(String command) throws SshTangException {
+        sendCommand(command, true, true, true);
     }
 
     /**
@@ -108,8 +111,9 @@ public class SshConnection implements Closeable {
      * @param order 需要发送的指令
      * @throws SshTangException 发送失败异常
      */
-    public void sendCommand(SshOrder order) throws SshTangException {
-        monitor.sendCommand(order.getCode());
+    public String sendCommand(SshOrder order) throws SshTangException {
+        log.info("start send order: {}", order);
+        return monitor.sendCommand(order.getCode());
     }
 
     /**
@@ -133,36 +137,39 @@ public class SshConnection implements Closeable {
      * @throws SshTangException 发送失败异常
      */
     public String sendCommand(String command, boolean logCommand, boolean logEcho,
-        boolean isSync) throws SshTangException {
-        // TODO: 2023/12/3 实现异步 
+        boolean async) throws SshTangException {
         checkConnect();
         if (logCommand) {
             log.info("start send command: {}", command);
         }
         try {
-            return send(command, logEcho);
+            return send(command, logEcho, async);
         } catch (SshTangException e) {
             log.error("send command error.", e);
             if (e.getErrorCode() == SshErrorCode.CHANNEL_HAVE_CLOSED) {
                 reConnect();
-                return send(command, logEcho);
+                return send(command, logEcho, async);
             } else {
                 throw e;
             }
         }
     }
 
-    private String send(String command, boolean logEcho) throws SshTangException {
-        String result = monitor.sendCommand(command);
-        if (logEcho) {
-            log.info("receive result: \n{}", result);
+    private String send(String command, boolean logEcho, boolean async) throws SshTangException {
+        if (async) {
+            return monitor.sendCommand(command, true);
+        } else {
+            String result = monitor.sendCommand(command);
+            if (logEcho) {
+                log.info("receive result: \n{}", result);
+            }
+            return result;
         }
-        return result;
     }
 
     private void checkConnect() throws SshTangException {
-        if (client == null || session == null) {
-            throw new SshTangException(SshErrorCode.CREATE_SESSION_ERROR);
+        if (isClose()) {
+            throw new SshTangException(SshErrorCode.SSH_CONN_HAVE_CLOSE);
         }
         if (channelShell.isClosed()) {
             log.warn("channel {}@{}:{} has closed.", sshParam.getUsername(), sshParam.getHost(), sshParam.getPort());
@@ -171,8 +178,10 @@ public class SshConnection implements Closeable {
         }
     }
 
-    private void reConnect() throws SshTangException {
-        // TODO: 2023/12/3  并发
+    private synchronized void reConnect() throws SshTangException {
+        if (!this.channelShell.isClosed()) {
+            return;
+        }
         log.info("start reconnect {}@{}:{} channel.", sshParam.getUsername(), sshParam.getHost(), sshParam.getPort());
         // 只创建shellChannel行不行？
         this.channelShell = createShellChannel(sshParam, session);

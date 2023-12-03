@@ -19,6 +19,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum SshErrorCode implements IErrorCode {
+    SSH_CONN_HAVE_CLOSE(IErrorCode.initCode(Module.SSH, "0006"), "ssh.conn.has.closed", null, null),
     CHANNEL_HAVE_CLOSED(IErrorCode.initCode(Module.SSH, "0005"), "ssh.channel.has.closed", null, null),
     CREATE_CHANNEL_ERROR(IErrorCode.initCode(Module.SSH, "0004"), "ssh.create.channel.error", null, null),
     SEND_COMMAND_ERROR(IErrorCode.initCode(Module.SSH, "0003"), "ssh.send.command.error", null, null),

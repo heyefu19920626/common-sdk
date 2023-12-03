@@ -52,19 +52,14 @@ class SshConnectionManagerTest {
     }
 
     @Test
-    @DisplayName("发送Ctrl+C按键成功")
+    @DisplayName("异步发送Ctrl+C按键成功")
     void should_send_ctrl_c_success_when_send_ctrl_c() throws SshTangException, IOException {
         SshParam sshParam = getSshParam();
         try (SshConnection sshConnection = SshConnectionManager.create(sshParam)) {
-            new Thread(() -> {
-                try {
-                    sshConnection.sendCommand("ping www.baidu.com");
-                } catch (SshTangException e) {
-                    throw new RuntimeException(e);
-                }
-            }).start();
+            sshConnection.sendCommandAsync("ping www.baidu.com");
             ThreadUtils.sleep(2, TimeUnit.SECONDS);
-            sshConnection.sendCommand(SshOrder.CTRL_C);
+            String echo = sshConnection.sendCommand(SshOrder.CTRL_C);
+            Assertions.assertTrue(echo.contains("bytes from"));
         }
     }
 
