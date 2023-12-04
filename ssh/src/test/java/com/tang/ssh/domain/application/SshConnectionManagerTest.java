@@ -2,8 +2,9 @@
  * Copyright (c) TangAn Technologies Co., Ltd. 2023-2023. All rights reserved.
  */
 
-package com.tang.ssh.domain.manager;
+package com.tang.ssh.domain.application;
 
+import com.tang.ssh.application.SshConnectionManager;
 import com.tang.ssh.domain.entity.SshConnection;
 import com.tang.ssh.domain.entity.SshOrder;
 import com.tang.ssh.domain.entity.SshParam;
