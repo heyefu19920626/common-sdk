@@ -9,11 +9,20 @@ import com.tang.ssh.domain.entity.SshParam;
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
 import com.tang.utils.CloseUtils;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.sshd.client.SshClient;
+import org.apache.sshd.client.auth.UserAuthFactory;
+import org.apache.sshd.client.auth.keyboard.UserAuthKeyboardInteractiveFactory;
+import org.apache.sshd.client.auth.password.UserAuthPasswordFactory;
+import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
+import org.apache.sshd.core.CoreModuleProperties;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -75,8 +84,7 @@ public class SshConnectionManager {
             return CONN_POOL.get(connName);
         }
         log.info("start create ssh({}) session.", connName);
-        SshClient client = SshClient.setUpDefaultClient();
-        client.start();
+        SshClient client = createClient();
         ClientSession session;
         try {
             session = createSession(sshParam, client);
@@ -86,14 +94,38 @@ public class SshConnectionManager {
             return sshConnection;
         } catch (IOException e) {
             log.error("create ssh({}) session error.", connName, e);
+            handleException(e.getMessage());
             throw new SshTangException(SshErrorCode.CREATE_SESSION_ERROR);
+        }
+    }
+
+    private static SshClient createClient() {
+        SshClient client = SshClient.setUpDefaultClient();
+        CoreModuleProperties.NIO_WORKERS.set(client, 1);
+        client.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
+        // 密码方式登录时，只使用密码认证，密码认证包含全密码、键盘交互式两种方式
+        List<UserAuthFactory> userAuthFactories = new ArrayList<>();
+        userAuthFactories.add(UserAuthPasswordFactory.INSTANCE);
+        userAuthFactories.add(UserAuthKeyboardInteractiveFactory.INSTANCE);
+        client.setUserAuthFactories(userAuthFactories);
+        client.start();
+        return client;
+    }
+
+    private static void handleException(String message) throws SshTangException {
+        if (message.contains("algorithms")) {
+            throw new SshTangException(SshErrorCode.SERVER_ALGORITHMS_UN_SUPPORT);
+        }
+        if (message.contains("authentication")) {
+            throw new SshTangException(SshErrorCode.SERVER_AUTHENTICATION_FAIL);
         }
     }
 
     private static ClientSession createSession(SshParam sshParam, SshClient client) throws IOException {
         ClientSession session;
         session = client.connect(sshParam.getUsername(), sshParam.getHost(), sshParam.getPort())
-            .verify(sshParam.getTimeoutSecond(), TimeUnit.SECONDS).getSession();
+            .verify(sshParam.getTimeoutSecond(), TimeUnit.SECONDS)
+            .getSession();
         session.addPasswordIdentity(sshParam.getPassword());
         session.auth().verify(sshParam.getTimeoutSecond(), TimeUnit.SECONDS);
         return session;

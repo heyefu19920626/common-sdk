@@ -4,7 +4,10 @@
 
 package com.tang.ssh.domain.entity;
 
+import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
+
+import cn.hutool.core.net.NetUtil;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -23,19 +26,25 @@ import java.util.Set;
 @Builder
 public class SshParam {
     private String host;
+
     private int port;
+
     private String username;
+
     private String password;
+
     /**
      * 连接超时秒数
      */
     @Builder.Default
     private int timeoutSecond = 5;
+
     /**
      * 命令输出结束符
      */
     @Builder.Default
-    private Set<String> overSign = new HashSet<>(List.of("$ "));
+    private Set<String> overSign = new HashSet<>(List.of("$", "Password:", "[Y/n]"));
+
     /**
      * 命令行输出编码格式
      */
@@ -46,5 +55,8 @@ public class SshParam {
      * 检查参数是否合法
      */
     public void check() throws SshTangException {
+        if (!NetUtil.ping(this.host)) {
+            throw new SshTangException(SshErrorCode.HOST_CONNECT_FAIL);
+        }
     }
 }

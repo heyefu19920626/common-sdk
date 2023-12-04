@@ -7,8 +7,10 @@ package com.tang.ssh.domain.entity;
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
 import com.tang.utils.CloseUtils;
+
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ChannelShell;
 import org.apache.sshd.client.session.ClientSession;
@@ -57,7 +59,7 @@ public class SshConnection implements Closeable {
 
     private SshMonitor createMonitor(SshParam sshParam) throws SshTangException {
         this.monitor = new SshMonitor(sshParam, this.channelShell);
-        monitor.start();
+        Thread.startVirtualThread(monitor);
         // 将首次登录连接的命令都清掉
         monitor.cleanLoginEcho();
         return monitor;
@@ -112,8 +114,24 @@ public class SshConnection implements Closeable {
      * @throws SshTangException 发送失败异常
      */
     public String sendCommand(SshOrder order) throws SshTangException {
+        return sendCommand(order, true);
+    }
+
+    /**
+     * 发送指令
+     *
+     * @param order 指令
+     * @param logEcho 是否打印回显
+     * @return 指令执行结果
+     * @throws SshTangException 发送失败
+     */
+    public String sendCommand(SshOrder order, boolean logEcho) throws SshTangException {
         log.info("start send order: {}", order);
-        return monitor.sendCommand(order.getCode());
+        String result = monitor.sendCommand(order.getCode());
+        if (logEcho) {
+            log.info("receive result: \n{}", result);
+        }
+        return result;
     }
 
     /**
@@ -130,14 +148,14 @@ public class SshConnection implements Closeable {
     /**
      * 发送命令
      *
-     * @param command    需要发送的命令
+     * @param command 需要发送的命令
      * @param logCommand 是否打印命令本身
-     * @param logEcho    是否打印回显
+     * @param logEcho 是否打印回显
      * @return 命令执行结果
      * @throws SshTangException 发送失败异常
      */
-    public String sendCommand(String command, boolean logCommand, boolean logEcho,
-        boolean async) throws SshTangException {
+    public String sendCommand(String command, boolean logCommand, boolean logEcho, boolean async)
+        throws SshTangException {
         checkConnect();
         if (logCommand) {
             log.info("start send command: {}", command);

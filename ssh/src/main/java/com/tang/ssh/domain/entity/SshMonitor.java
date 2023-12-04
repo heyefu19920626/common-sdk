@@ -8,7 +8,9 @@ import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
 import com.tang.utils.CloseUtils;
 import com.tang.utils.ThreadUtils;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.sshd.client.channel.ClientChannel;
 import org.apache.sshd.client.channel.ClientChannelEvent;
 
@@ -32,7 +34,7 @@ import java.util.concurrent.TimeUnit;
  * @since 2023/12/2
  */
 @Slf4j
-public class SshMonitor extends Thread implements Closeable {
+public class SshMonitor implements Closeable, Runnable {
     private final SshParam sshParam;
 
     private boolean isOpen = true;
@@ -80,7 +82,7 @@ public class SshMonitor extends Thread implements Closeable {
         while (!hasCleanLoginEcho && isCommandNotOver() && isNotTimeout(startTime)) {
             ThreadUtils.sleep(1, TimeUnit.SECONDS);
         }
-        log.info("\n{}\n", getResult());
+        log.info("login info:\n{}\n", getResult());
         hasCleanLoginEcho = true;
     }
 
@@ -157,7 +159,7 @@ public class SshMonitor extends Thread implements Closeable {
 
     private boolean isCommandNotOver() {
         // 有任意一个结束符匹配到，就算结束
-        return sshParam.getOverSign().stream().noneMatch(overSign -> cache.toString().endsWith(overSign));
+        return sshParam.getOverSign().stream().noneMatch(overSign -> cache.toString().trim().endsWith(overSign));
     }
 
     private void readFromChannelInput(InputStream in, String type) {
