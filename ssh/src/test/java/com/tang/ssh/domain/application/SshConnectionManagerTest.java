@@ -27,7 +27,7 @@ class SshConnectionManagerTest {
         SshParam sshParam = getSshParam();
         try (SshConnection sshConnection = SshConnectionManager.create(sshParam)) {
             String pwd = sshConnection.sendCommand("pwd");
-            Assertions.assertTrue(pwd.contains("/home/test"));
+            Assertions.assertEquals("/home/test", pwd);
         }
     }
 
@@ -45,10 +45,10 @@ class SshConnectionManagerTest {
         SshParam sshParam = getSshParam();
         SshConnection sshConnection = SshConnectionManager.create(sshParam);
         String pwd = sshConnection.sendCommand("pwd");
-        Assertions.assertTrue(pwd.contains("/home/test"));
+        Assertions.assertEquals("/home/test", pwd);
         SshConnectionManager.releaseSshConnection(sshConnection);
         try (SshConnection connection = SshConnectionManager.create(sshParam)) {
-            Assertions.assertTrue(connection.sendCommand("pwd").contains("/home/test"));
+            Assertions.assertEquals("/home/test", connection.sendCommand("pwd"));
         }
     }
 

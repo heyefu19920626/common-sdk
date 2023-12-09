@@ -7,10 +7,8 @@ package com.tang.ssh.domain.entity;
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
 import com.tang.utils.CloseUtils;
-
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ChannelShell;
 import org.apache.sshd.client.session.ClientSession;
@@ -120,7 +118,7 @@ public class SshConnection implements Closeable {
     /**
      * 发送指令
      *
-     * @param order 指令
+     * @param order   指令
      * @param logEcho 是否打印回显
      * @return 指令执行结果
      * @throws SshTangException 发送失败
@@ -148,9 +146,9 @@ public class SshConnection implements Closeable {
     /**
      * 发送命令
      *
-     * @param command 需要发送的命令
+     * @param command    需要发送的命令
      * @param logCommand 是否打印命令本身
-     * @param logEcho 是否打印回显
+     * @param logEcho    是否打印回显
      * @return 命令执行结果
      * @throws SshTangException 发送失败异常
      */
@@ -174,15 +172,30 @@ public class SshConnection implements Closeable {
     }
 
     private String send(String command, boolean logEcho, boolean async) throws SshTangException {
+        String result;
         if (async) {
-            return monitor.sendCommand(command, true);
+            result = monitor.sendCommand(command, true);
         } else {
-            String result = monitor.sendCommand(command);
+            result = monitor.sendCommand(command);
             if (logEcho) {
-                log.info("receive result: \n{}", result);
+                log.debug("receive result: \n{}", result);
             }
-            return result;
         }
+        return cleanResult(command, result, logEcho);
+    }
+
+    private String cleanResult(String command, String result, boolean logEcho) {
+        // 清理掉回显的命令本身
+        result = result.replace(command, "").trim();
+        // 一般最后一行是shell的开头，属于无效回显
+        int lastLineIndex = result.lastIndexOf("\n");
+        if (lastLineIndex != -1) {
+            result = result.substring(0, lastLineIndex).trim();
+        }
+        if (logEcho) {
+            log.info("clean result:\n{}", result);
+        }
+        return result;
     }
 
     private void checkConnect() throws SshTangException {

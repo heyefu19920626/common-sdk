@@ -4,10 +4,9 @@
 
 package com.tang.ssh.domain.entity;
 
+import cn.hutool.core.net.NetUtil;
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
-
-import cn.hutool.core.net.NetUtil;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -27,7 +26,8 @@ import java.util.Set;
 public class SshParam {
     private String host;
 
-    private int port;
+    @Builder.Default
+    private Integer port = 22;
 
     private String username;
 
@@ -43,7 +43,7 @@ public class SshParam {
      * 命令输出结束符
      */
     @Builder.Default
-    private Set<String> overSign = new HashSet<>(List.of("$", "Password:", "[Y/n]"));
+    private Set<String> overSign = new HashSet<>(List.of("$", "Password:", "[Y/n]", "#"));
 
     /**
      * 命令行输出编码格式
