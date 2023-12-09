@@ -5,19 +5,14 @@
 package com.tang.exception;
 
 import com.tang.response.Response;
+import com.tang.utils.ScanClassUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
-import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -75,7 +70,8 @@ public class GlobalExceptionHandler {
             }
         }
         log.info("will scan package: {}", needPaths);
-        needPaths.forEach(this::scanPackage);
+        needPaths.stream().map(ScanClassUtils::scanAllClassFullName).flatMap(List::stream)
+            .forEach(this::registerHandler);
     }
 
     private boolean isNeedAdd(String customPath, Set<String> needPaths) {
@@ -95,23 +91,8 @@ public class GlobalExceptionHandler {
         return needAdd;
     }
 
-    private void scanPackage(String path) {
-        log.info("start scan package: {}", path);
-        PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver = new PathMatchingResourcePatternResolver();
-        CachingMetadataReaderFactory cachingMetadataReaderFactory = new CachingMetadataReaderFactory();
+    private void registerHandler(String className) {
         try {
-            Resource[] resources = pathMatchingResourcePatternResolver.getResources(
-                "classpath*:" + path + "/**/*.class");
-            Arrays.stream(resources).forEach(resource -> this.scanPath(resource, cachingMetadataReaderFactory));
-        } catch (IOException e) {
-            log.error("scan package({}) error", path, e);
-        }
-    }
-
-    private void scanPath(Resource resource, CachingMetadataReaderFactory cachingMetadataReaderFactory) {
-        try {
-            MetadataReader reader = cachingMetadataReaderFactory.getMetadataReader(resource);
-            String className = reader.getClassMetadata().getClassName();
             Class<?> scanClass = GlobalExceptionHandler.class.getClassLoader().loadClass(className);
             if (IRestExceptionHandler.class.isAssignableFrom(scanClass) && !className.equals(
                 IRestExceptionHandler.class.getName())) {
@@ -120,7 +101,7 @@ public class GlobalExceptionHandler {
                 handlers.add((IRestExceptionHandler) instance);
             }
         } catch (Throwable e) {
-            log.error("scan error: {}", e.getMessage());
+            log.error("register handler error: {}", e.getMessage());
         }
     }
 }
