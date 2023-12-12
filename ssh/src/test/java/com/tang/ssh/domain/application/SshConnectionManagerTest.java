@@ -64,6 +64,20 @@ class SshConnectionManagerTest {
         }
     }
 
+    @Test
+    @DisplayName("发送top命令成功")
+    void should_send_top_and_ctrl_c() throws SshTangException, IOException {
+        SshParam sshParam = getSshParam();
+        try (SshConnection sshConnection = SshConnectionManager.create(sshParam)) {
+            sshConnection.sendCommandAsync("top");
+            ThreadUtils.sleep(2, TimeUnit.SECONDS);
+            String echo = sshConnection.sendCommand(SshOrder.CTRL_C);
+            Assertions.assertTrue(echo.contains("%CPU"));
+            echo = sshConnection.sendCommand("top -b -n 1");
+            Assertions.assertTrue(echo.contains("%CPU"));
+        }
+    }
+
     private SshParam getSshParam() {
         return SshParam.builder().host("192.168.209.129").port(22).username("test").password("123456").build();
     }

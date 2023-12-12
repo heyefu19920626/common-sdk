@@ -55,7 +55,7 @@ public class SshConnection implements Closeable {
         this.monitor = createMonitor(sshParam);
     }
 
-    private SshMonitor createMonitor(SshParam sshParam) throws SshTangException {
+    private SshMonitor createMonitor(SshParam sshParam) {
         this.monitor = new SshMonitor(sshParam, this.channelShell);
         Thread.startVirtualThread(monitor);
         // 将首次登录连接的命令都清掉
@@ -66,7 +66,8 @@ public class SshConnection implements Closeable {
     private ChannelShell createShellChannel(SshParam sshParam, ClientSession session) throws SshTangException {
         try {
             ChannelShell channel = session.createShellChannel();
-            channel.setPtyType("bash");
+            // xterm类型才能支持top命令, 不过直接发送top命令会有乱码, 最好使用top -b -n 1(b,批处理模式，n执行n次)
+            channel.setPtyType("xterm");
             channel.setPtyLines(Integer.MAX_VALUE);
             channel.setPtyColumns(Integer.MAX_VALUE);
             channel.setUsePty(true);
