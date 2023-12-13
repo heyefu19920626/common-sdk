@@ -69,11 +69,7 @@ class SshConnectionManagerTest {
     void should_send_top_and_ctrl_c() throws SshTangException, IOException {
         SshParam sshParam = getSshParam();
         try (SshConnection sshConnection = SshConnectionManager.create(sshParam)) {
-            sshConnection.sendCommandAsync("top");
-            ThreadUtils.sleep(2, TimeUnit.SECONDS);
-            String echo = sshConnection.sendCommand(SshOrder.CTRL_C);
-            Assertions.assertTrue(echo.contains("%CPU"));
-            echo = sshConnection.sendCommand("top -b -n 1");
+            String echo = sshConnection.sendCommand("top -b -n 1");
             Assertions.assertTrue(echo.contains("%CPU"));
         }
     }

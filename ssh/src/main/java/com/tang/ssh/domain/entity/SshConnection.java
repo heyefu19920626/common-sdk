@@ -63,11 +63,22 @@ public class SshConnection implements Closeable {
         return monitor;
     }
 
+    /**
+     * xterm类型才能支持top命令, 不过直接发送top命令会有乱码, 最好使用top -b -n 1(b,批处理模式，n执行n次)
+     * <p>
+     * 这里设置为xterm，部分命令的回显会带有乱码，需要先执行命令：bind 'set enable-bracketed-paste off'，
+     *
+     * @param sshParam ssh连接参数
+     * @param session  连接session
+     * @return 创建好的通道
+     * @throws SshTangException 创建失败
+     * @see <a href="https://askubuntu.com/questions/662222/why-bracketed-paste-mode-is-enabled-sporadically-in-my-terminal-screen">Why bracketed paste mode is enabled sporadically in my terminal screen</a>
+     * @see <a href="https://stackoverflow.com/questions/42212099/how-do-i-disable-the-weird-characters-from-bracketed-paste-mode-on-the-mac-os">How do I disable the weird characters from "bracketed paste mode" on the Mac OS X default terminal</a>
+     */
     private ChannelShell createShellChannel(SshParam sshParam, ClientSession session) throws SshTangException {
         try {
             ChannelShell channel = session.createShellChannel();
-            // xterm类型才能支持top命令, 不过直接发送top命令会有乱码, 最好使用top -b -n 1(b,批处理模式，n执行n次)
-            channel.setPtyType("xterm");
+            // channel.setPtyType("xterm");
             channel.setPtyLines(Integer.MAX_VALUE);
             channel.setPtyColumns(Integer.MAX_VALUE);
             channel.setUsePty(true);

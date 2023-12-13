@@ -9,9 +9,7 @@ import com.tang.ssh.domain.entity.SshParam;
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
 import com.tang.utils.CloseUtils;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.auth.UserAuthFactory;
 import org.apache.sshd.client.auth.keyboard.UserAuthKeyboardInteractiveFactory;
@@ -76,7 +74,7 @@ public class SshConnectionManager {
     }
 
     private static String getConnName(SshParam sshParam) {
-        return STR. "\{ sshParam.getUsername() }@\{ sshParam.getHost() }:\{ sshParam.getPort() }" ;
+        return String.format("%s@%s:%s", sshParam.getUsername(), sshParam.getHost(), sshParam.getPort());
     }
 
     private synchronized static SshConnection create(SshParam sshParam, String connName) throws SshTangException {

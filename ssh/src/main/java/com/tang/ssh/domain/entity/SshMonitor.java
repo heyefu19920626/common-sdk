@@ -8,9 +8,7 @@ import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
 import com.tang.utils.CloseUtils;
 import com.tang.utils.ThreadUtils;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.sshd.client.channel.ClientChannel;
 import org.apache.sshd.client.channel.ClientChannelEvent;
 
@@ -61,8 +59,8 @@ public class SshMonitor implements Closeable, Runnable {
 
     @Override
     public void run() {
-        Thread.currentThread()
-            .setName(STR. "shell-monitor-\{ this.sshParam.getHost() }-\{ System.currentTimeMillis() }" );
+        String threadName = String.format("shell-monitor-%s-%s", this.sshParam.getHost(), System.currentTimeMillis());
+        Thread.currentThread().setName(threadName);
         log.info("start monitor {} ssh.", sshParam.getHost());
         while (isOpen) {
             if (channel.isEofSignalled() || channel.isClosed()) {
