@@ -9,18 +9,64 @@ import com.tang.ssh.domain.entity.SshConnection;
 import com.tang.ssh.domain.entity.SshOrder;
 import com.tang.ssh.domain.entity.SshParam;
 import com.tang.ssh.domain.exception.SshTangException;
+import com.tang.ssh.domain.utils.CommandExecutionHelper;
+import com.tang.ssh.domain.utils.SshTestUtils;
 import com.tang.utils.ThreadUtils;
+import org.apache.sshd.server.Environment;
+import org.apache.sshd.server.SshServer;
+import org.apache.sshd.server.channel.ChannelSession;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 /**
  * ssh管理器测试
  */
 class SshConnectionManagerTest {
+    private static SshServer sshd;
+    private static int port;
+
+    @BeforeAll
+    static void beforeAll() throws IOException {
+        sshd = SshTestUtils.setupTestServer();
+        port = sshd.getPort();
+        sshd.setShellFactory((session) -> new CommandExecutionHelper() {
+            @Override
+            protected boolean handleCommandLine(String command) throws Exception {
+                OutputStream stdout = getOutputStream();
+                String resp;
+                if ("pwd".equals(command)) {
+                    resp = "%s\n%s\n$".formatted(command, "/home/test");
+                } else if (command.startsWith("top")) {
+                    resp = "%s\n%s\n$".formatted(command, "%CPU");
+                } else if (command.startsWith("ping")) {
+                    resp = "%s\n%s\n$".formatted(command, "bytes from");
+                } else {
+                    resp = "%s\n$".formatted(command);
+                }
+                stdout.write(resp.getBytes(StandardCharsets.UTF_8));
+                stdout.flush();
+                return true;
+            }
+
+            @Override
+            public void start(ChannelSession channel, Environment env) throws IOException {
+                super.start(channel, env);
+                OutputStream stdout = getOutputStream();
+                stdout.write("$".getBytes(StandardCharsets.UTF_8));
+                stdout.flush();
+            }
+        });
+    }
+
+
     @Test
     @DisplayName("参数正确时，获取回显成功")
     void should_get_echo_success_when_param_right() throws SshTangException, IOException {
@@ -75,6 +121,12 @@ class SshConnectionManagerTest {
     }
 
     private SshParam getSshParam() {
-        return SshParam.builder().host("192.168.209.129").port(22).username("test").password("123456").build();
+        // return SshParam.builder().host("192.168.209.129").port(22).username("test").password("123456").build();
+        return SshParam.builder().host("127.0.0.1").port(port).username("test").password("123456").build();
+    }
+
+    @AfterAll
+    static void afterAll() throws IOException {
+        sshd.close();
     }
 }
