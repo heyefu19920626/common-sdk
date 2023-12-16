@@ -5,6 +5,7 @@
 package com.tang.ssh.domain.application;
 
 import com.tang.base.exception.BaseException;
+import com.tang.base.utils.ThreadUtils;
 import com.tang.ssh.application.SshConnectionManager;
 import com.tang.ssh.domain.entity.SshConnection;
 import com.tang.ssh.domain.entity.SshJumpParam;
@@ -12,12 +13,9 @@ import com.tang.ssh.domain.entity.SshOrder;
 import com.tang.ssh.domain.entity.SshParam;
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
-import com.tang.ssh.domain.utils.CommandExecutionHelper;
 import com.tang.ssh.domain.utils.SshTestUtils;
-import com.tang.base.utils.ThreadUtils;
-import org.apache.sshd.server.Environment;
 import org.apache.sshd.server.SshServer;
-import org.apache.sshd.server.channel.ChannelSession;
+import org.apache.sshd.server.forward.AcceptAllForwardingFilter;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -25,8 +23,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,52 +30,36 @@ import java.util.concurrent.TimeUnit;
  */
 class SshConnectionManagerTest {
     private static SshServer sshd;
+
     private static int port;
+
+    private static SshServer sshJump;
+
+    private static int portJump;
 
     @BeforeAll
     static void beforeAll() throws IOException {
-        sshd = SshTestUtils.setupTestServer();
+        sshd = SshTestUtils.setupTestServer(0);
         port = sshd.getPort();
-        sshd.setShellFactory((session) -> new CommandExecutionHelper() {
-            @Override
-            protected boolean handleCommandLine(String command) throws Exception {
-                OutputStream stdout = getOutputStream();
-                String resp;
-                if ("pwd".equals(command)) {
-                    resp = "%s\n%s\n$".formatted(command, "/home/test");
-                } else if (command.startsWith("top")) {
-                    resp = "%s\n%s\n$".formatted(command, "%CPU");
-                } else if (command.startsWith("ping")) {
-                    resp = "%s\n%s\n$".formatted(command, "bytes from");
-                } else {
-                    resp = "%s\n$".formatted(command);
-                }
-                stdout.write(resp.getBytes(StandardCharsets.UTF_8));
-                stdout.flush();
-                return true;
-            }
-
-            @Override
-            public void start(ChannelSession channel, Environment env) throws IOException {
-                super.start(channel, env);
-                OutputStream stdout = getOutputStream();
-                stdout.write("$".getBytes(StandardCharsets.UTF_8));
-                stdout.flush();
-            }
-        });
+        sshd.setShellFactory((session) -> SshTestUtils.createShellFactory());
+        sshJump = SshTestUtils.setupTestServer(1);
+        sshJump.setForwardingFilter(AcceptAllForwardingFilter.INSTANCE);
+        portJump = sshJump.getPort();
+        sshJump.setShellFactory((session) -> SshTestUtils.createShellFactory());
     }
 
     @Test
     @DisplayName("当使用ssh跳转的时候连接成功")
     void should_connect_success_when_use_ssh_jump() throws BaseException, IOException {
-        SshJumpParam jumpParam =
-            SshJumpParam.builder().host("192.168.209.129").username("test").password("123456").build();
-        SshParam sshParam =
-            SshParam.builder().sshJumpParam(jumpParam).host("192.168.209.133").username("test").password("123456")
-                .build();
+        // SshJumpParam jumpParam = SshJumpParam.builder().host(""192.168.209.129").username("test")
+        SshJumpParam jumpParam = SshJumpParam.builder().host("127.0.0.1").port(portJump).username("test")
+            .password("123456").build();
+        // SshParam sshParam = SshParam.builder().sshJumpParam(jumpParam).host("192.168.209.133")
+        SshParam sshParam = SshParam.builder().sshJumpParam(jumpParam).host("127.0.0.1").port(sshd.getPort())
+            .username("test").password("123456").build();
         try (SshConnection connection = SshConnectionManager.create(sshParam)) {
-            String ipAddr = connection.sendCommand("ip addr");
-            Assertions.assertTrue(ipAddr.contains(sshParam.getHost()));
+            String pwd = connection.sendCommand("pwd");
+            Assertions.assertEquals("/home/test", pwd);
         }
     }
 
@@ -154,5 +134,6 @@ class SshConnectionManagerTest {
     @AfterAll
     static void afterAll() throws IOException {
         sshd.close();
+        sshJump.close();
     }
 }

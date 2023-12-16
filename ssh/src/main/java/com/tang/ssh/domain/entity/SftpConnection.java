@@ -7,9 +7,9 @@ package com.tang.ssh.domain.entity;
 import cn.hutool.core.io.FileUtil;
 import com.tang.base.exception.BaseErrorCode;
 import com.tang.base.exception.BaseException;
+import com.tang.base.utils.CloseUtils;
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
-import com.tang.base.utils.CloseUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.sftp.client.SftpClient;
 
@@ -48,7 +48,7 @@ public class SftpConnection implements Closeable {
     public void download(String remotePath, String localPath) throws SshTangException {
         check();
         log.info("start download {} from {}", localPath, remotePath);
-        try (InputStream read = sftpClient.read(remotePath);) {
+        try (InputStream read = sftpClient.read(remotePath)) {
             FileUtil.writeFromStream(read, new File(localPath));
         } catch (IOException e) {
             log.error("download from sftp error.", e);
@@ -75,7 +75,7 @@ public class SftpConnection implements Closeable {
             decimalFormat.format(file.length() / 1024.0 / 1024));
         try (BufferedInputStream fis = new BufferedInputStream(new FileInputStream(file));
             SftpClient.CloseableHandle handle = sftpClient.open(remotePath, SftpClient.OpenMode.Create,
-                SftpClient.OpenMode.Write);
+                SftpClient.OpenMode.Write)
         ) {
             log.info("start upload {} to {}", localPath, remotePath);
             upload(fis, handle);
@@ -91,11 +91,7 @@ public class SftpConnection implements Closeable {
         byte[] bytes = new byte[single];
         int len = 0;
         int write = 0;
-        while ((len = fis.available()) > 0) {
-            if (len >= single) {
-                len = single;
-            }
-            fis.read(bytes, 0, len);
+        while ((len = fis.read(bytes, 0, single)) > 0) {
             sftpClient.write(handle, write, bytes, 0, len);
             write += len;
         }

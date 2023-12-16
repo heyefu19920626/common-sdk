@@ -7,13 +7,17 @@ package com.tang.ssh.domain.utils;
 import org.apache.sshd.common.config.keys.KeyUtils;
 import org.apache.sshd.common.keyprovider.KeyPairProvider;
 import org.apache.sshd.core.CoreModuleProperties;
+import org.apache.sshd.server.Environment;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.auth.pubkey.AcceptAllPublickeyAuthenticator;
+import org.apache.sshd.server.channel.ChannelSession;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.shell.UnknownCommandFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Objects;
@@ -32,10 +36,10 @@ public class SshTestUtils {
      * @return ssh服务
      * @throws IOException 启动失败
      */
-    public static SshServer setupTestServer() throws IOException {
+    public static SshServer setupTestServer(int i) throws IOException {
         SshServer sshd = SshServer.setUpDefaultServer();
         sshd.setKeyPairProvider(
-            createTestHostKeyProvider(new File("target/hostkey." + KeyUtils.EC_ALGORITHM).toPath()));
+            createTestHostKeyProvider(new File("target/hostkey_%s.%s".formatted(i, KeyUtils.EC_ALGORITHM)).toPath()));
         sshd.setPasswordAuthenticator(
             (username, password, session) -> "test".equals(username) && "123456".equals(password));
         sshd.setPublickeyAuthenticator(AcceptAllPublickeyAuthenticator.INSTANCE);
@@ -52,5 +56,40 @@ public class SshTestUtils {
         keyProvider.setAlgorithm(KeyUtils.EC_ALGORITHM);
         keyProvider.setKeySize(256);
         return keyProvider;
+    }
+
+    /**
+     * 创建shell工厂
+     *
+     * @return shell工厂
+     */
+    public static CommandExecutionHelper createShellFactory() {
+        return new CommandExecutionHelper() {
+            @Override
+            protected boolean handleCommandLine(String command) throws Exception {
+                OutputStream stdout = getOutputStream();
+                String resp;
+                if ("pwd".equals(command)) {
+                    resp = "%s\n%s\n$".formatted(command, "/home/test");
+                } else if (command.startsWith("top")) {
+                    resp = "%s\n%s\n$".formatted(command, "%CPU");
+                } else if (command.startsWith("ping")) {
+                    resp = "%s\n%s\n$".formatted(command, "bytes from");
+                } else {
+                    resp = "%s\n$".formatted(command);
+                }
+                stdout.write(resp.getBytes(StandardCharsets.UTF_8));
+                stdout.flush();
+                return true;
+            }
+
+            @Override
+            public void start(ChannelSession channel, Environment env) throws IOException {
+                super.start(channel, env);
+                OutputStream stdout = getOutputStream();
+                stdout.write("$".getBytes(StandardCharsets.UTF_8));
+                stdout.flush();
+            }
+        };
     }
 }

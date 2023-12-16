@@ -87,7 +87,8 @@ class SftpConnectionTest {
         SshJumpParam jumpParam = null;
         if (hasJump) {
             jumpParam = SshJumpParam.builder().host("192.168.209.129").username("test").password("123456").build();
-            return SshParam.builder().sshJumpParam(jumpParam).host("192.168.209.133").username("test").password("123456")
+            return SshParam.builder().sshJumpParam(jumpParam).host("192.168.209.133").username("test")
+                .password("123456")
                 .build();
         }
         return SshParam.builder().sshJumpParam(jumpParam).host("192.168.209.129").username("test").password("123456")

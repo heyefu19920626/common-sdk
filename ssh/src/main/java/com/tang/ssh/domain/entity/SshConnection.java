@@ -11,7 +11,9 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ChannelShell;
+import org.apache.sshd.client.channel.PtyCapableChannelSession;
 import org.apache.sshd.client.session.ClientSession;
+import org.apache.sshd.common.channel.PtyChannelConfigurationHolder;
 import org.apache.sshd.sftp.client.SftpClient;
 import org.apache.sshd.sftp.client.SftpClientFactory;
 
@@ -70,6 +72,7 @@ public class SshConnection implements Closeable {
     /**
      * xterm类型才能支持top命令, 不过直接发送top命令会有乱码, 最好使用top -b -n 1(b,批处理模式，n执行n次)
      * <p>
+     * 可以参考{@link PtyCapableChannelSession#resolvePtyType(PtyChannelConfigurationHolder)}
      * 这里设置为xterm(命令行执行echo $TERM获取终端类型)，部分命令的回显会带有乱码，需要先执行命令：bind 'set enable-bracketed-paste off'，
      * 最好设置为bash，否则日志中可能乱码
      *
