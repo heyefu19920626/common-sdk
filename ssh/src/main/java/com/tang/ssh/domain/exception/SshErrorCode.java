@@ -20,10 +20,11 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum SshErrorCode implements IErrorCode {
-    HOST_CONNECT_FAIL(IErrorCode.initCode(Module.SSH, "0009"), "ssh.host.connect.fail", null,
-        null),
-    SERVER_AUTHENTICATION_FAIL(IErrorCode.initCode(Module.SSH, "0008"), "ssh.server.authentication.fail", null,
-        null),
+    SFTP_DOWNLOAD_FAIL(IErrorCode.initCode(Module.SSH, "0012"), "ssh.sftp.download.fail", null, null),
+    SFTP_UPLOAD_FAIL(IErrorCode.initCode(Module.SSH, "0011"), "ssh.sftp.upload.fail", null, null),
+    CRETE_SFTP_FAIL(IErrorCode.initCode(Module.SSH, "0010"), "ssh.create.sftp.fail", null, null),
+    HOST_CONNECT_FAIL(IErrorCode.initCode(Module.SSH, "0009"), "ssh.host.connect.fail", null, null),
+    SERVER_AUTHENTICATION_FAIL(IErrorCode.initCode(Module.SSH, "0008"), "ssh.server.authentication.fail", null, null),
     SERVER_ALGORITHMS_UN_SUPPORT(IErrorCode.initCode(Module.SSH, "0007"), "ssh.server.algorithms.un.support", null,
         null),
     SSH_CONN_HAVE_CLOSE(IErrorCode.initCode(Module.SSH, "0006"), "ssh.conn.has.closed", null, null),

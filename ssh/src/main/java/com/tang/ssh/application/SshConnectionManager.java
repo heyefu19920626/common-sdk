@@ -4,6 +4,7 @@
 
 package com.tang.ssh.application;
 
+import com.tang.ssh.domain.entity.BasicAuthParam;
 import com.tang.ssh.domain.entity.SshConnection;
 import com.tang.ssh.domain.entity.SshParam;
 import com.tang.ssh.domain.exception.SshErrorCode;
@@ -14,6 +15,7 @@ import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.auth.UserAuthFactory;
 import org.apache.sshd.client.auth.keyboard.UserAuthKeyboardInteractiveFactory;
 import org.apache.sshd.client.auth.password.UserAuthPasswordFactory;
+import org.apache.sshd.client.config.hosts.HostConfigEntry;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.core.CoreModuleProperties;
@@ -66,10 +68,10 @@ public class SshConnectionManager {
      */
     public static void releaseSshConnection(SshConnection sshConnection) {
         if (sshConnection != null) {
-            if (!sshConnection.isClose()) {
+            SshConnection connection = CONN_POOL.remove(getConnName(sshConnection.getSshParam()));
+            if (!connection.isClose()) {
                 CloseUtils.close(sshConnection);
             }
-            CONN_POOL.remove(getConnName(sshConnection.getSshParam()));
         }
     }
 
@@ -85,6 +87,10 @@ public class SshConnectionManager {
         SshClient client = createClient();
         ClientSession session;
         try {
+            BasicAuthParam sshJumpParam = sshParam.getSshJumpParam();
+            if (sshParam.getSshJumpParam() != null) {
+                return createByJumper(sshParam, connName, client, sshJumpParam);
+            }
             session = createSession(sshParam, client);
             SshConnection sshConnection = new SshConnection(sshParam, client, session);
             CONN_POOL.put(connName, sshConnection);
@@ -95,6 +101,24 @@ public class SshConnectionManager {
             handleException(e.getMessage());
             throw new SshTangException(SshErrorCode.CREATE_SESSION_ERROR);
         }
+    }
+
+    private static SshConnection createByJumper(SshParam sshParam, String connName, SshClient client,
+        BasicAuthParam sshJumpParam) throws IOException, SshTangException {
+        client.addPasswordIdentity(sshJumpParam.getPassword());
+        String proxyJump = "%s@%s:%s".formatted(sshJumpParam.getUsername(), sshJumpParam.getHost(),
+            sshJumpParam.getPort());
+        log.info("create conn to {} by ssh jumper: {}", sshParam.getHost(), proxyJump);
+        ClientSession sessionByJumper =
+            client.connect(new HostConfigEntry("", sshParam.getHost(), sshParam.getPort(),
+                    sshParam.getUsername(), proxyJump))
+                .verify().getSession();
+        sessionByJumper.addPasswordIdentity(sshParam.getPassword());
+        sessionByJumper.auth().verify();
+        SshConnection sshConnection = new SshConnection(sshParam, client, sessionByJumper);
+        CONN_POOL.put(connName, sshConnection);
+        log.info("finish create ssh({}) session.", connName);
+        return sshConnection;
     }
 
     private static SshClient createClient() {
@@ -119,7 +143,7 @@ public class SshConnectionManager {
         }
     }
 
-    private static ClientSession createSession(SshParam sshParam, SshClient client) throws IOException {
+    private static ClientSession createSession(BasicAuthParam sshParam, SshClient client) throws IOException {
         ClientSession session;
         session = client.connect(sshParam.getUsername(), sshParam.getHost(), sshParam.getPort())
             .verify(sshParam.getTimeoutSecond(), TimeUnit.SECONDS)

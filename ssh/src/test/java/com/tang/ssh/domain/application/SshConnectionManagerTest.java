@@ -4,8 +4,10 @@
 
 package com.tang.ssh.domain.application;
 
+import com.tang.exception.BaseException;
 import com.tang.ssh.application.SshConnectionManager;
 import com.tang.ssh.domain.entity.SshConnection;
+import com.tang.ssh.domain.entity.SshJumpParam;
 import com.tang.ssh.domain.entity.SshOrder;
 import com.tang.ssh.domain.entity.SshParam;
 import com.tang.ssh.domain.exception.SshTangException;
@@ -66,6 +68,19 @@ class SshConnectionManagerTest {
         });
     }
 
+    @Test
+    @DisplayName("当使用ssh跳转的时候连接成功")
+    void should_connect_success_when_use_ssh_jump() throws BaseException, IOException {
+        SshJumpParam jumpParam =
+            SshJumpParam.builder().host("192.168.209.129").username("test").password("123456").build();
+        SshParam sshParam =
+            SshParam.builder().sshJumpParam(jumpParam).host("192.168.209.133").username("test").password("123456")
+                .build();
+        try (SshConnection connection = SshConnectionManager.create(sshParam)) {
+            String ipAddr = connection.sendCommand("ip addr");
+            Assertions.assertTrue(ipAddr.contains(sshParam.getHost()));
+        }
+    }
 
     @Test
     @DisplayName("参数正确时，获取回显成功")
