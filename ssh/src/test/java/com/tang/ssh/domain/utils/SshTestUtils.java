@@ -4,6 +4,8 @@
 
 package com.tang.ssh.domain.utils;
 
+import com.tang.ssh.domain.entity.SshJumpParam;
+import com.tang.ssh.domain.entity.SshParam;
 import org.apache.sshd.common.config.keys.KeyUtils;
 import org.apache.sshd.common.keyprovider.KeyPairProvider;
 import org.apache.sshd.core.CoreModuleProperties;
@@ -30,9 +32,37 @@ import java.util.Objects;
  * @since 2023/12/15
  */
 public class SshTestUtils {
+    private static final String host = "127.0.0.1";
+
+    private static final String username = "test";
+
+    private static final String password = "123456";
+
+    /**
+     * 创建测试的ssh连接参数
+     *
+     * @param sshd     需要连接的ssh服务器
+     * @param sshdJump 用来跳转的ssh服务器
+     * @return ssh连接参数
+     */
+    public static SshParam createSshParam(SshServer sshd, SshServer sshdJump) {
+        if (sshdJump != null) {
+            // SshJumpParam jumpParam = SshJumpParam.builder().host("192.168.209.129").username("test").password("123456") .build();
+            SshJumpParam jumpParam =
+                SshJumpParam.builder().host(host).port(sshdJump.getPort()).username(username).password(password)
+                    .build();
+            // return SshParam.builder().sshJumpParam(jumpParam).host("192.168.209.133").username("test")
+            return SshParam.builder().sshJumpParam(jumpParam).host(host).port(sshd.getPort()).username(username)
+                .password(password).build();
+        }
+        // return SshParam.builder().host("192.168.209.129").username("test").password("123456") .build();
+        return SshParam.builder().host(host).port(sshd.getPort()).username(username).password(password).build();
+    }
+
     /**
      * 启动一个本地ssh服务器, 需要自己设置shell工厂
      *
+     * @param i 创建的第几个服务器，用来创建主机秘钥
      * @return ssh服务
      * @throws IOException 启动失败
      */
@@ -40,8 +70,7 @@ public class SshTestUtils {
         SshServer sshd = SshServer.setUpDefaultServer();
         sshd.setKeyPairProvider(
             createTestHostKeyProvider(new File("target/hostkey_%s.%s".formatted(i, KeyUtils.EC_ALGORITHM)).toPath()));
-        sshd.setPasswordAuthenticator(
-            (username, password, session) -> "test".equals(username) && "123456".equals(password));
+        sshd.setPasswordAuthenticator((user, passwd, session) -> username.equals(user) && password.equals(passwd));
         sshd.setPublickeyAuthenticator(AcceptAllPublickeyAuthenticator.INSTANCE);
         // sshd.setShellFactory(EchoShellFactory.INSTANCE);
         sshd.setCommandFactory(UnknownCommandFactory.INSTANCE);
