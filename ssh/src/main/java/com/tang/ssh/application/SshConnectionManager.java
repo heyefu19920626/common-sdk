@@ -9,7 +9,7 @@ import com.tang.ssh.domain.entity.SshConnection;
 import com.tang.ssh.domain.entity.SshParam;
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
-import com.tang.utils.CloseUtils;
+import com.tang.base.utils.CloseUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.auth.UserAuthFactory;

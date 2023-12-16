@@ -2,9 +2,9 @@
  * Copyright (c) TangAn Technologies Co., Ltd. 2023-2023. All rights reserved.
  */
 
-package com.tang.exception;
+package com.tang.base.exception;
 
-import com.tang.context.Module;
+import com.tang.base.context.Module;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

@@ -2,7 +2,7 @@
  * Copyright (c) TangAn Technologies Co., Ltd. 2023-2023. All rights reserved.
  */
 
-package com.tang.context;
+package com.tang.base.context;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

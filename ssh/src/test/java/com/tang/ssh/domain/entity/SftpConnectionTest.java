@@ -4,7 +4,7 @@
 
 package com.tang.ssh.domain.entity;
 
-import com.tang.exception.BaseException;
+import com.tang.base.exception.BaseException;
 import com.tang.ssh.application.SshConnectionManager;
 import com.tang.ssh.domain.exception.SshTangException;
 import org.junit.jupiter.api.Assertions;

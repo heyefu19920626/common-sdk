@@ -4,7 +4,7 @@
 
 package com.tang.ssh.domain.application;
 
-import com.tang.exception.BaseException;
+import com.tang.base.exception.BaseException;
 import com.tang.ssh.application.SshConnectionManager;
 import com.tang.ssh.domain.entity.SshConnection;
 import com.tang.ssh.domain.entity.SshJumpParam;
@@ -13,7 +13,7 @@ import com.tang.ssh.domain.entity.SshParam;
 import com.tang.ssh.domain.exception.SshTangException;
 import com.tang.ssh.domain.utils.CommandExecutionHelper;
 import com.tang.ssh.domain.utils.SshTestUtils;
-import com.tang.utils.ThreadUtils;
+import com.tang.base.utils.ThreadUtils;
 import org.apache.sshd.server.Environment;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.channel.ChannelSession;

@@ -2,10 +2,10 @@
  * Copyright (c) TangAn Technologies Co., Ltd. 2023-2023. All rights reserved.
  */
 
-package com.tang.exception;
+package com.tang.base.exception;
 
-import com.tang.response.Response;
-import com.tang.utils.ScanClassUtils;
+import com.tang.base.response.Response;
+import com.tang.base.utils.ScanClassUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

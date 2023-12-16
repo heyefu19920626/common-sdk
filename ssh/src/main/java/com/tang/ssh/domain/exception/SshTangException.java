@@ -4,7 +4,7 @@
 
 package com.tang.ssh.domain.exception;
 
-import com.tang.exception.BaseException;
+import com.tang.base.exception.BaseException;
 
 /**
  * 本项目相关的ssh异常

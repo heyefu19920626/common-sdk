@@ -4,8 +4,8 @@
 
 package com.tang.ssh.domain.exception;
 
-import com.tang.context.Module;
-import com.tang.exception.IErrorCode;
+import com.tang.base.context.Module;
+import com.tang.base.exception.IErrorCode;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

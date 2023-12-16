@@ -2,10 +2,10 @@
  * Copyright (c) TangAn Technologies Co., Ltd. 2023-2023. All rights reserved.
  */
 
-package com.tang.dynamic;
+package com.tang.base.dynamic;
 
-import com.tang.exception.BaseErrorCode;
-import com.tang.exception.BaseException;
+import com.tang.base.exception.BaseErrorCode;
+import com.tang.base.exception.BaseException;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.tools.Diagnostic;

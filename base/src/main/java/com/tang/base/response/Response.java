@@ -2,11 +2,11 @@
  * Copyright (c) TangAn Technologies Co., Ltd. 2023-2023. All rights reserved.
  */
 
-package com.tang.response;
+package com.tang.base.response;
 
-import com.tang.exception.BaseException;
-import com.tang.exception.IErrorCode;
-import com.tang.i18n.I18nUtils;
+import com.tang.base.i18n.I18nUtils;
+import com.tang.base.exception.BaseException;
+import com.tang.base.exception.IErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

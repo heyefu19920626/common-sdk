@@ -5,11 +5,11 @@
 package com.tang.ssh.domain.entity;
 
 import cn.hutool.core.io.FileUtil;
-import com.tang.exception.BaseErrorCode;
-import com.tang.exception.BaseException;
+import com.tang.base.exception.BaseErrorCode;
+import com.tang.base.exception.BaseException;
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
-import com.tang.utils.CloseUtils;
+import com.tang.base.utils.CloseUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.sftp.client.SftpClient;
 

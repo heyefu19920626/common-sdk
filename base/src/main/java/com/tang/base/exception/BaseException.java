@@ -2,9 +2,9 @@
  * Copyright (c) TangAn Technologies Co., Ltd. 2023-2023. All rights reserved.
  */
 
-package com.tang.exception;
+package com.tang.base.exception;
 
-import com.tang.i18n.I18nUtils;
+import com.tang.base.i18n.I18nUtils;
 import lombok.Getter;
 
 import java.util.Locale;

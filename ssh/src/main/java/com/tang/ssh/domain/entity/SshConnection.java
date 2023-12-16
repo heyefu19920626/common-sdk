@@ -6,7 +6,7 @@ package com.tang.ssh.domain.entity;
 
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
-import com.tang.utils.CloseUtils;
+import com.tang.base.utils.CloseUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.client.SshClient;

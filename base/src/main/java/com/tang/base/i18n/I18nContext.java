@@ -2,7 +2,7 @@
  * Copyright (c) TangAn Technologies Co., Ltd. 2023-2023. All rights reserved.
  */
 
-package com.tang.i18n;
+package com.tang.base.i18n;
 
 import lombok.extern.slf4j.Slf4j;
 

@@ -2,7 +2,7 @@
  * Copyright (c) TangAn Technologies Co., Ltd. 2023-2023. All rights reserved.
  */
 
-package com.tang.exception;
+package com.tang.base.exception;
 
 /**
  * 测试异常

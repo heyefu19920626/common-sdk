@@ -4,8 +4,8 @@
 
 package com.tang;
 
-import com.tang.exception.BaseErrorCode;
-import com.tang.response.Response;
+import com.tang.base.exception.BaseErrorCode;
+import com.tang.base.response.Response;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.GetMapping;

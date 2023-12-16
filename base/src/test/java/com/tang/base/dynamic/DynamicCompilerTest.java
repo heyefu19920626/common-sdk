@@ -2,10 +2,10 @@
  * Copyright (c) TangAn Technologies Co., Ltd. 2023-2023. All rights reserved.
  */
 
-package com.tang.dynamic;
+package com.tang.base.dynamic;
 
-import com.tang.exception.BaseErrorCode;
-import com.tang.exception.BaseException;
+import com.tang.base.exception.BaseErrorCode;
+import com.tang.base.exception.BaseException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ class DynamicCompilerTest {
     @Test
     @DisplayName("当编译成功，返回clas文件路径")
     void should_return_class_path_when_compiler_success() {
-        String path = "src/main/java/com/tang/i18n/I18nUtils.java";
+        String path = "src/main/java/com/tang/base/i18n/I18nUtils.java";
         String classPath = Assertions.assertDoesNotThrow(() -> DynamicCompiler.compilerToClass(path));
         Assertions.assertTrue(classPath.endsWith(".class"));
     }
