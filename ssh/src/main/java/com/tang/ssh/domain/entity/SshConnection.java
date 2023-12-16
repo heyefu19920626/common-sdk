@@ -46,6 +46,8 @@ public class SshConnection implements Closeable {
 
     private SshMonitor monitor;
 
+    private SftpConnection sftpConnection;
+
     @Getter
     private boolean close = false;
 
@@ -202,10 +204,13 @@ public class SshConnection implements Closeable {
     private String cleanResult(String command, String result, boolean logEcho) {
         // 清理掉回显的命令本身
         result = result.replace(command, "").trim();
-        // 一般最后一行是shell的开头，属于无效回显
         int lastLineIndex = result.lastIndexOf("\n");
         if (lastLineIndex != -1) {
+            // 一般最后一行是shell的开头，属于无效回显
             result = result.substring(0, lastLineIndex).trim();
+        } else {
+            // 有些命令没有回显
+            result = "";
         }
         if (logEcho) {
             log.info("clean result:\n{}", result);
@@ -235,9 +240,32 @@ public class SshConnection implements Closeable {
         log.info("finish reconnect {}@{}:{} channel.", sshParam.getUsername(), sshParam.getHost(), sshParam.getPort());
     }
 
+    /**
+     * 创建sftp连接
+     *
+     * @return sftp连接
+     * @throws SshTangException 创建失败
+     */
+    public SftpConnection createSftpConnection() throws SshTangException {
+        checkConnect();
+        if (sftpConnection != null && !sftpConnection.isClose()) {
+            return sftpConnection;
+        }
+        log.info("create sftp connection.");
+        try {
+            SftpClient sftpClient = SftpClientFactory.instance().createSftpClient(session);
+            sftpConnection = new SftpConnection(sftpClient);
+            log.info("create sftp connection success.");
+            return sftpConnection;
+        } catch (IOException e) {
+            log.error("create sftp error.", e);
+            throw new SshTangException(SshErrorCode.CRETE_SFTP_FAIL);
+        }
+    }
+
     @Override
     public void close() throws IOException {
-        CloseUtils.close(this.monitor, this.session, this.client);
+        CloseUtils.close(this.sftpConnection, this.monitor, this.session, this.client);
         this.monitor = null;
         this.session = null;
         this.client = null;
