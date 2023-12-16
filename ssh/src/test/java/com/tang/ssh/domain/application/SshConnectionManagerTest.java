@@ -10,6 +10,7 @@ import com.tang.ssh.domain.entity.SshConnection;
 import com.tang.ssh.domain.entity.SshJumpParam;
 import com.tang.ssh.domain.entity.SshOrder;
 import com.tang.ssh.domain.entity.SshParam;
+import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
 import com.tang.ssh.domain.utils.CommandExecutionHelper;
 import com.tang.ssh.domain.utils.SshTestUtils;
@@ -133,6 +134,16 @@ class SshConnectionManagerTest {
             String echo = sshConnection.sendCommand("top -b -n 1");
             Assertions.assertTrue(echo.contains("%CPU"));
         }
+    }
+
+    @Test
+    @DisplayName("当连接已关闭后执行命令时抛出异常")
+    void should_throw_exception_when_conn_close() throws SshTangException, IOException {
+        SshConnection sshConnection = SshConnectionManager.create(getSshParam());
+        sshConnection.close();
+        SshTangException exception = Assertions.assertThrows(SshTangException.class,
+            () -> sshConnection.sendCommand("pwd"));
+        Assertions.assertEquals(SshErrorCode.SSH_CONN_HAVE_CLOSE, exception.getErrorCode());
     }
 
     private SshParam getSshParam() {
