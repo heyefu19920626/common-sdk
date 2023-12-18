@@ -8,10 +8,8 @@ import com.tang.base.exception.BaseException;
 import com.tang.ssh.application.SshConnectionManager;
 import com.tang.ssh.domain.exception.SshTangException;
 import com.tang.ssh.domain.utils.SshTestUtils;
-import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.forward.AcceptAllForwardingFilter;
-import org.apache.sshd.sftp.server.SftpSubsystemFactory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -23,7 +21,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 
 /**
  * sftp测试
@@ -36,12 +33,8 @@ class SftpConnectionTest {
 
     @BeforeAll
     static void beforeAll() throws IOException {
-        sshd = SshTestUtils.setupTestServer(0);
-        sshd.setShellFactory((session) -> SshTestUtils.createShellFactory());
-        sshd.setSubsystemFactories(Collections.singletonList(new SftpSubsystemFactory()));
-        sshd.setFileSystemFactory(new VirtualFileSystemFactory(new File("target").toPath()));
-        sshdJump = SshTestUtils.setupTestServer(1);
-        sshdJump.setShellFactory((session) -> SshTestUtils.createShellFactory());
+        sshd = SshTestUtils.createWithSftpServer(0);
+        sshdJump = SshTestUtils.createSshServer(1);
         sshdJump.setForwardingFilter(AcceptAllForwardingFilter.INSTANCE);
     }
 

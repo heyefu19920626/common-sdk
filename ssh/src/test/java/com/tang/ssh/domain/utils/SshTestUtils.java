@@ -7,21 +7,20 @@ package com.tang.ssh.domain.utils;
 import com.tang.ssh.domain.entity.SshJumpParam;
 import com.tang.ssh.domain.entity.SshParam;
 import org.apache.sshd.common.config.keys.KeyUtils;
+import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.common.keyprovider.KeyPairProvider;
 import org.apache.sshd.core.CoreModuleProperties;
-import org.apache.sshd.server.Environment;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.auth.pubkey.AcceptAllPublickeyAuthenticator;
-import org.apache.sshd.server.channel.ChannelSession;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.shell.UnknownCommandFactory;
+import org.apache.sshd.sftp.server.SftpSubsystemFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -32,11 +31,11 @@ import java.util.Objects;
  * @since 2023/12/15
  */
 public class SshTestUtils {
-    private static final String host = "127.0.0.1";
+    public static final String host = "127.0.0.1";
 
-    private static final String username = "test";
+    public static final String username = "test";
 
-    private static final String password = "123456";
+    public static final String password = "123456";
 
     /**
      * 创建测试的ssh连接参数
@@ -66,7 +65,7 @@ public class SshTestUtils {
      * @return ssh服务
      * @throws IOException 启动失败
      */
-    public static SshServer setupTestServer(int i) throws IOException {
+    public static SshServer createSshServer(int i) throws IOException {
         SshServer sshd = SshServer.setUpDefaultServer();
         sshd.setKeyPairProvider(
             createTestHostKeyProvider(new File("target/hostkey_%s.%s".formatted(i, KeyUtils.EC_ALGORITHM)).toPath()));
@@ -76,6 +75,21 @@ public class SshTestUtils {
         sshd.setCommandFactory(UnknownCommandFactory.INSTANCE);
         CoreModuleProperties.NIO2_READ_TIMEOUT.set(sshd, Duration.ofSeconds(60));
         sshd.start();
+        sshd.setShellFactory((session) -> SshTestUtils.createShellFactory());
+        return sshd;
+    }
+
+    /**
+     * 创建一个带sftp的ssh服务器
+     *
+     * @param i 创建的第几个服务
+     * @return ssh服务器
+     * @throws IOException 创建失败
+     */
+    public static SshServer createWithSftpServer(int i) throws IOException {
+        SshServer sshd = createSshServer(i);
+        sshd.setSubsystemFactories(Collections.singletonList(new SftpSubsystemFactory()));
+        sshd.setFileSystemFactory(new VirtualFileSystemFactory(new File("target").toPath()));
         return sshd;
     }
 
@@ -94,31 +108,6 @@ public class SshTestUtils {
      */
     public static CommandExecutionHelper createShellFactory() {
         return new CommandExecutionHelper() {
-            @Override
-            protected boolean handleCommandLine(String command) throws Exception {
-                OutputStream stdout = getOutputStream();
-                String resp;
-                if ("pwd".equals(command)) {
-                    resp = "%s\n%s\n$".formatted(command, "/home/test");
-                } else if (command.startsWith("top")) {
-                    resp = "%s\n%s\n$".formatted(command, "%CPU");
-                } else if (command.startsWith("ping")) {
-                    resp = "%s\n%s\n$".formatted(command, "bytes from");
-                } else {
-                    resp = "%s\n$".formatted(command);
-                }
-                stdout.write(resp.getBytes(StandardCharsets.UTF_8));
-                stdout.flush();
-                return true;
-            }
-
-            @Override
-            public void start(ChannelSession channel, Environment env) throws IOException {
-                super.start(channel, env);
-                OutputStream stdout = getOutputStream();
-                stdout.write("$".getBytes(StandardCharsets.UTF_8));
-                stdout.flush();
-            }
         };
     }
 }

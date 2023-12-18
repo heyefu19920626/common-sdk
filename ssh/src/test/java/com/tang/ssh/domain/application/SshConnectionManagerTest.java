@@ -34,11 +34,9 @@ class SshConnectionManagerTest {
 
     @BeforeAll
     static void beforeAll() throws IOException {
-        sshd = SshTestUtils.setupTestServer(0);
-        sshd.setShellFactory((session) -> SshTestUtils.createShellFactory());
-        sshJump = SshTestUtils.setupTestServer(1);
+        sshd = SshTestUtils.createSshServer(0);
+        sshJump = SshTestUtils.createSshServer(1);
         sshJump.setForwardingFilter(AcceptAllForwardingFilter.INSTANCE);
-        sshJump.setShellFactory((session) -> SshTestUtils.createShellFactory());
     }
 
     @Test

@@ -4,9 +4,9 @@
 
 package com.tang.ssh.domain.entity;
 
+import com.tang.base.utils.CloseUtils;
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
-import com.tang.base.utils.CloseUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.client.SshClient;
@@ -201,10 +201,10 @@ public class SshConnection implements Closeable {
                 log.debug("receive result: \n{}", result);
             }
         }
-        return cleanResult(command, result, logEcho);
+        return cleanEcho(command, result, logEcho);
     }
 
-    private String cleanResult(String command, String result, boolean logEcho) {
+    private String cleanEcho(String command, String result, boolean logEcho) {
         // 清理掉回显的命令本身
         result = result.replace(command, "").trim();
         int lastLineIndex = result.lastIndexOf("\n");
@@ -212,13 +212,20 @@ public class SshConnection implements Closeable {
             // 一般最后一行是shell的开头，属于无效回显
             result = result.substring(0, lastLineIndex).trim();
         } else {
-            // 有些命令没有回显
-            result = "";
+            if (isCleanEcho(result)) {
+                // 有些命令没有回显
+                result = "";
+            }
         }
         if (logEcho) {
             log.info("clean result:\n{}", result);
         }
         return result;
+    }
+
+    private boolean isCleanEcho(String result) {
+        // 有些命令本身不是以通用的结束符结束的
+        return !result.endsWith("Password:");
     }
 
     private void checkConnect() throws SshTangException {

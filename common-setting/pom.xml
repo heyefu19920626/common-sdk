@@ -26,6 +26,7 @@
         <commons-io>2.15.1</commons-io>
         <commons-lang3>3.14.0</commons-lang3>
         <sshd>2.11.0</sshd>
+        <plugin.jar>3.3.0</plugin.jar>
     </properties>
 
     <dependencyManagement>
@@ -101,4 +102,16 @@
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${plugin.jar}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>
