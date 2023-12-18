@@ -2,9 +2,11 @@
  * Copyright (c) TangAn Technologies Co., Ltd. 2023-2023. All rights reserved.
  */
 
-package com.tang.ssh.domain.entity;
+package com.tang.ssh.domain.service;
 
 import com.tang.base.utils.CloseUtils;
+import com.tang.ssh.domain.entity.SshOrder;
+import com.tang.ssh.domain.entity.SshParam;
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
 import lombok.Getter;

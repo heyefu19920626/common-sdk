@@ -7,8 +7,13 @@ package com.tang.ssh.domain.entity;
 import cn.hutool.core.net.NetUtil;
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * ssh连接参数
@@ -20,6 +25,24 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 public class SshParam extends BasicAuthParam {
+    /**
+     * 连接超时秒数
+     */
+    @Builder.Default
+    private int timeoutSecond = 5;
+
+    /**
+     * 命令输出结束符
+     */
+    @Builder.Default
+    private Set<String> overSign = new HashSet<>(List.of("$", "Password:", "[Y/n]", "#"));
+
+    /**
+     * 命令行输出编码格式
+     */
+    @Builder.Default
+    private String encoding = "utf-8";
+
     /**
      * ssh跳转参数, 部分目标主机无法直接连接，需要通过ssh跳板机进行连接
      */

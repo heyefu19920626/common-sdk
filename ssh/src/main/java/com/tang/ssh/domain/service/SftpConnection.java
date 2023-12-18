@@ -2,7 +2,7 @@
  * Copyright (c) TangAn Technologies Co., Ltd. 2023-2023. All rights reserved.
  */
 
-package com.tang.ssh.domain.entity;
+package com.tang.ssh.domain.service;
 
 import cn.hutool.core.io.FileUtil;
 import com.tang.base.exception.BaseErrorCode;

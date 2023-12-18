@@ -2,10 +2,11 @@
  * Copyright (c) TangAn Technologies Co., Ltd. 2023-2023. All rights reserved.
  */
 
-package com.tang.ssh.domain.entity;
+package com.tang.ssh.domain.service;
 
 import com.tang.base.exception.BaseException;
 import com.tang.ssh.application.SshConnectionManager;
+import com.tang.ssh.domain.entity.SshParam;
 import com.tang.ssh.domain.exception.SshTangException;
 import com.tang.ssh.domain.utils.SshTestUtils;
 import org.apache.sshd.server.SshServer;

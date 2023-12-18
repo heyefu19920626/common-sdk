@@ -2,16 +2,15 @@
  * Copyright (c) TangAn Technologies Co., Ltd. 2023-2023. All rights reserved.
  */
 
-package com.tang.ssh.domain.application;
+package com.tang.ssh.application;
 
 import com.tang.base.exception.BaseException;
 import com.tang.base.utils.ThreadUtils;
-import com.tang.ssh.application.SshConnectionManager;
-import com.tang.ssh.domain.entity.SshConnection;
 import com.tang.ssh.domain.entity.SshOrder;
 import com.tang.ssh.domain.entity.SshParam;
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
+import com.tang.ssh.domain.service.SshConnection;
 import com.tang.ssh.domain.utils.SshTestUtils;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.forward.AcceptAllForwardingFilter;
