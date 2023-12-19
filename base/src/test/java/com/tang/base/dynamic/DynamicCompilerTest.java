@@ -47,7 +47,7 @@ class DynamicCompilerTest {
     void should_throw_compiler_error_when_compiler_error() {
         String property = System.getProperty("user.dir");
         String parent = new File(property).getParent();
-        String path = parent + "/ssh/src/main/java/com/tang/ssh/domain/entity/SshConnection.java";
+        String path = parent + "/ssh/src/main/java/com/tang/ssh/domain/service/SshConnection.java";
         BaseException exception = Assertions.assertThrows(BaseException.class,
             () -> DynamicCompiler.compilerToClass(path));
         Assertions.assertEquals(BaseErrorCode.COMPILER_ERROR.getCode(), exception.getErrorCode().getCode());

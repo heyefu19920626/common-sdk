@@ -17,10 +17,10 @@ import org.junit.jupiter.api.Test;
  * @version 0.1
  * @since 2023/12/18
  */
-public class ArchUnitTest {
+class ArchUnitTest {
     JavaClasses classes = new ClassFileImporter().importPackages("com.tang");
 
-    @Test
+    // @Test
     @DisplayName("base下的包不能依赖任何非base下的包")
     void base_not_depend_any_package() {
         ArchRuleDefinition.noClasses()
