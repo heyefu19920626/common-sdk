@@ -37,6 +37,7 @@ public class ScanClassUtils {
         PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver = new PathMatchingResourcePatternResolver();
         CachingMetadataReaderFactory cachingMetadataReaderFactory = new CachingMetadataReaderFactory();
         try {
+            // classpath*才会扫描所有路径下的文件, 只有classpath的情况下，如果测试路径下有相同的路径，则只会扫描测试路径
             Resource[] resources = pathMatchingResourcePatternResolver.getResources(
                 "classpath*:" + path + "/**/*.class");
             return Arrays.stream(resources).map(resource -> ScanClassUtils.scanPath(resource,
