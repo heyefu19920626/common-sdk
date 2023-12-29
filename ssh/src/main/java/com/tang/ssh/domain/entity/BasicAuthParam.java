@@ -37,8 +37,7 @@ public class BasicAuthParam {
      */
     public void check() throws SshTangException {
         if (!NetUtil.ping(this.host)) {
-            throw new SshTangException(SshErrorCode.HOST_CONNECT_FAIL.getCode(),
-                SshErrorCode.HOST_CONNECT_FAIL.getDescKey(), new String[]{host});
+            throw new SshTangException(SshErrorCode.HOST_CONNECT_FAIL, host);
         }
     }
 }

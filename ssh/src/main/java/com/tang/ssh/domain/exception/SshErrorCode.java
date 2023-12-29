@@ -19,26 +19,27 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum SshErrorCode implements IErrorCode {
-    SFTP_HAS_CLOSE(IErrorCode.initCode(Module.SSH, "0013"), "ssh.sftp.has.close", null, null),
-    SFTP_DOWNLOAD_FAIL(IErrorCode.initCode(Module.SSH, "0012"), "ssh.sftp.download.fail", null, null),
-    SFTP_UPLOAD_FAIL(IErrorCode.initCode(Module.SSH, "0011"), "ssh.sftp.upload.fail", null, null),
-    CRETE_SFTP_FAIL(IErrorCode.initCode(Module.SSH, "0010"), "ssh.create.sftp.fail", null, null),
-    HOST_CONNECT_FAIL(IErrorCode.initCode(Module.SSH, "0009"), "ssh.host.connect.fail", null, null),
-    SERVER_AUTHENTICATION_FAIL(IErrorCode.initCode(Module.SSH, "0008"), "ssh.server.authentication.fail", null, null),
-    SERVER_ALGORITHMS_UN_SUPPORT(IErrorCode.initCode(Module.SSH, "0007"), "ssh.server.algorithms.un.support", null,
-        null),
-    SSH_CONN_HAVE_CLOSE(IErrorCode.initCode(Module.SSH, "0006"), "ssh.conn.has.closed", null, null),
-    CHANNEL_HAVE_CLOSED(IErrorCode.initCode(Module.SSH, "0005"), "ssh.channel.has.closed", null, null),
-    CREATE_CHANNEL_ERROR(IErrorCode.initCode(Module.SSH, "0004"), "ssh.create.channel.error", null, null),
-    SEND_COMMAND_ERROR(IErrorCode.initCode(Module.SSH, "0003"), "ssh.send.command.error", null, null),
-    CREATE_SESSION_ERROR(IErrorCode.initCode(Module.SSH, "0002"), "ssh.create.session.error", null, null),
-    PARAM_ERROR(IErrorCode.initCode(Module.SSH, "0001"), "ssh.param.error", null, null);
+    SFTP_HAS_CLOSE("0013", "ssh.sftp.has.close"),
+    SFTP_DOWNLOAD_FAIL("0012", "ssh.sftp.download.fail"),
+    SFTP_UPLOAD_FAIL("0011", "ssh.sftp.upload.fail"),
+    CRETE_SFTP_FAIL("0010", "ssh.create.sftp.fail"),
+    HOST_CONNECT_FAIL("0009", "ssh.host.connect.fail"),
+    SERVER_AUTHENTICATION_FAIL("0008", "ssh.server.authentication.fail"),
+    SERVER_ALGORITHMS_UN_SUPPORT("0007", "ssh.server.algorithms.un.support"),
+    SSH_CONN_HAVE_CLOSE("0006", "ssh.conn.has.closed"),
+    CHANNEL_HAVE_CLOSED("0005", "ssh.channel.has.closed"),
+    CREATE_CHANNEL_ERROR("0004", "ssh.create.channel.error"),
+    SEND_COMMAND_ERROR("0003", "ssh.send.command.error"),
+    CREATE_SESSION_ERROR("0002", "ssh.create.session.error"),
+    PARAM_ERROR("0001", "ssh.param.error");
 
-    private final int code;
+    private final String moduleErrorCode;
 
     private final String descKey;
 
-    private final String[] descParams;
 
-    private final String[] suggestionParams;
+    @Override
+    public Module getModule() {
+        return Module.SSH;
+    }
 }

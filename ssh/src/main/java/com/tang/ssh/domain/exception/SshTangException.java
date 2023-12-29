@@ -18,7 +18,7 @@ public class SshTangException extends BaseException {
         super(errorCode);
     }
 
-    public SshTangException(int code, String descKey, String[] descParams, String... suggestionParams) {
-        super(code, descKey, descParams, suggestionParams);
+    public SshTangException(SshErrorCode errorCode, String... descParams) {
+        super(errorCode, descParams);
     }
 }

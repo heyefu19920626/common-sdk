@@ -17,11 +17,27 @@ import com.tang.base.context.Module;
  */
 public interface IErrorCode {
     /**
-     * 获取错误码
+     * 获取错误所在的模块
+     *
+     * @return 错误所在的模块
+     */
+    Module getModule();
+
+    /**
+     * 所在模块的错误码
+     *
+     * @return 模块所在的错误码
+     */
+    String getModuleErrorCode();
+
+    /**
+     * 获取完整的错误码, 由模块码+模块所在错误码构成
      *
      * @return 错误码
      */
-    int getCode();
+    default int getCode() {
+        return Integer.parseInt(getModule().getCode() + getModuleErrorCode());
+    }
 
     /**
      * 获取错误描述的国际化key
@@ -35,23 +51,16 @@ public interface IErrorCode {
      *
      * @return 错误描述的国际化参数
      */
-    String[] getDescParams();
+    default String[] getDescParams() {
+        return new String[]{};
+    }
 
     /**
      * 获取错误建议的国际化参数
      *
      * @return 错误建议的国际化参数
      */
-    String[] getSuggestionParams();
-
-    /**
-     * 初始化错误码
-     *
-     * @param module 错误所属模块
-     * @param code   错误在模块内的错误码
-     * @return 完整的错误码
-     */
-    static int initCode(Module module, String code) {
-        return Integer.parseInt(module.getModule() + code);
+    default String[] getSuggestionParams() {
+        return new String[]{};
     }
 }

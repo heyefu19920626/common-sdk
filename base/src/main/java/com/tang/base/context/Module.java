@@ -20,5 +20,5 @@ public enum Module {
     SSH(1001),
     BASE(1000);
 
-    private final int module;
+    private final int code;
 }

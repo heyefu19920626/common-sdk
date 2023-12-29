@@ -12,11 +12,7 @@ package com.tang.base.exception;
  * @since 2023/12/2
  */
 public class TestException extends BaseException {
-    public TestException(IErrorCode errorCode) {
+    public TestException(TestErrorCode errorCode) {
         super(errorCode);
-    }
-
-    public TestException(int code, String descKey, String[] descParams, String... suggestionParams) {
-        super(code, descKey, descParams, suggestionParams);
     }
 }

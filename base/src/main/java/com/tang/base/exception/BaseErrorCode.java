@@ -18,13 +18,16 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum BaseErrorCode implements IErrorCode {
-    COMPILER_ERROR(IErrorCode.initCode(Module.BASE, "0004"), "base.compiler.error", null, null),
-    FILE_SUFFIX_ILLEGAL(IErrorCode.initCode(Module.BASE, "0003"), "base.file.suffix.illegal", null, null),
-    FILE_FORMAT_ILLEGAL(IErrorCode.initCode(Module.BASE, "0002"), "base.file.format.illegal", null, null),
-    SYSTEM_INTERNAL_ERROR(IErrorCode.initCode(Module.BASE, "0001"), "base.system.internal.error", null, null);
+    COMPILER_ERROR( "0004", "base.compiler.error"),
+    FILE_SUFFIX_ILLEGAL( "0003", "base.file.suffix.illegal"),
+    FILE_FORMAT_ILLEGAL( "0002", "base.file.format.illegal"),
+    SYSTEM_INTERNAL_ERROR( "0001", "base.system.internal.error");
 
-    private final int code;
+    private final String moduleErrorCode;
     private final String descKey;
-    private final String[] descParams;
-    private final String[] suggestionParams;
+
+    @Override
+    public Module getModule() {
+        return Module.BASE;
+    }
 }

@@ -21,6 +21,6 @@ public class TestExceptionHandler implements IRestExceptionHandler {
 
     @Override
     public Response<?> handle(Throwable throwable) {
-        return Response.fail(new TestException(102, "test.error.2", null));
+        return Response.fail(new TestException(TestErrorCode.TEST_ERROR_CODE_2));
     }
 }

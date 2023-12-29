@@ -4,6 +4,7 @@
 
 package com.tang.base.exception;
 
+import com.tang.base.context.Module;
 import com.tang.base.i18n.I18nUtils;
 import lombok.Getter;
 
@@ -25,21 +26,31 @@ public class BaseException extends Exception {
         this.errorCode = errorCode;
     }
 
-    public BaseException(int code, String descKey, String[] descParams, String... suggestionParams) {
-        super(descKey);
-        this.errorCode = initErrorCode(code, descKey, descParams, suggestionParams);
+    public BaseException(IErrorCode errorCode, String... descParams) {
+        super(errorCode.getDescKey());
+        this.errorCode = initErrorCode(errorCode, descParams);
     }
 
-    private IErrorCode initErrorCode(int code, String descKey, String[] descParams, String... suggestionParams) {
+    public BaseException(IErrorCode errorCode, String[] descParams, String... suggestionParams) {
+        super(errorCode.getDescKey());
+        this.errorCode = initErrorCode(errorCode, descParams, suggestionParams);
+    }
+
+    private IErrorCode initErrorCode(IErrorCode errorCode, String[] descParams, String... suggestionParams) {
         return new IErrorCode() {
             @Override
-            public int getCode() {
-                return code;
+            public Module getModule() {
+                return errorCode.getModule();
+            }
+
+            @Override
+            public String getModuleErrorCode() {
+                return errorCode.getModuleErrorCode();
             }
 
             @Override
             public String getDescKey() {
-                return descKey;
+                return errorCode.getDescKey();
             }
 
             @Override
