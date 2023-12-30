@@ -6,14 +6,11 @@ package com.tang.base.dynamic;
 
 import com.tang.base.exception.BaseErrorCode;
 import com.tang.base.exception.BaseException;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.tools.Diagnostic;
-import javax.tools.DiagnosticCollector;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.ToolProvider;
+import javax.tools.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -28,6 +25,7 @@ import java.nio.charset.StandardCharsets;
  * @since 2023/12/13
  */
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DynamicCompiler {
     /**
      * 将java文件编译成class文件，返回对应的class文件的路径
@@ -57,12 +55,10 @@ public class DynamicCompiler {
             for (Diagnostic<? extends JavaFileObject> diagnostic : diagnosticCollector.getDiagnostics()) {
                 error.append(diagnostic.toString()).append("\n");
             }
-            throw new BaseException(BaseErrorCode.COMPILER_ERROR.getCode(), BaseErrorCode.COMPILER_ERROR.getDescKey()
-                , new String[]{error.toString()});
+            throw new BaseException(BaseErrorCode.COMPILER_ERROR, error.toString());
         } catch (IOException e) {
             log.error("compiler error!", e);
-            throw new BaseException(BaseErrorCode.COMPILER_ERROR.getCode(), BaseErrorCode.COMPILER_ERROR.getDescKey()
-                , new String[]{e.getMessage()});
+            throw new BaseException(BaseErrorCode.COMPILER_ERROR, e.getMessage());
         }
     }
 

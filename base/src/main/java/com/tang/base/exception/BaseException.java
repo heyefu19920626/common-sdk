@@ -18,7 +18,7 @@ import java.util.Locale;
  * @since 2023/12/2
  */
 @Getter
-public class BaseException extends Exception {
+public class BaseException extends RuntimeException {
     private final IErrorCode errorCode;
 
     public BaseException(IErrorCode errorCode) {
