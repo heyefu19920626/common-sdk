@@ -17,5 +17,6 @@
         <module>common-setting</module>
         <module>base</module>
         <module>ssh</module>
+        <module>task</module>
     </modules>
 </project>

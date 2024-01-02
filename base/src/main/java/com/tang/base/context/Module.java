@@ -17,6 +17,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum Module {
+    TASK(1002),
     SSH(1001),
     BASE(1000);
 
