@@ -6,6 +6,15 @@ spring:
     name: producer
 
 eureka:
+  instance:
+    status-page-url: http://localhost:${server.port}/producer/name
+    home-page-url: http://localhost:8003/
+    health-check-url: http://localhost:8003/consumer/name
+#    会在org.springframework.cloud.client.loadbalancer.LoadBalancerClient.reconstructURI和org.springframework.cloud
+#    .openfeign.loadbalancer.FeignBlockingLoadBalancerClient.execute中访问实际地址
+  #    可以通过指定下面的值来指定访问本客户端的地址, 可以参考https://blog.csdn.net/weixikn_36171229/article/details/82056234
+  #    hostname: localhost
+  #    non-secure-port: 8003
   client:
     register-with-eureka: true
     service-url:
@@ -17,4 +26,11 @@ ribbon:
   eureka:
     enabled: true
 
+logging:
+  level:
+    feign: debug
+    org:
+      springframework:
+        cloud:
+          netflix: debug
 

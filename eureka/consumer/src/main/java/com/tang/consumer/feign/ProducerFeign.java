@@ -11,4 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public interface ProducerFeign {
     @GetMapping("/producer/name")
     String name();
+
+    @GetMapping("/consumer/name")
+    String nameFor();
 }

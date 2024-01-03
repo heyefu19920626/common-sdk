@@ -6,6 +6,9 @@ server:
   port: 8003
 
 eureka:
+  instance:
+    home-page-url: http://localhost:8003
+    status-page-url: http://localhost:${server.port}/consumer/name
   client:
     service-url:
       defaultZone: http://localhost:8001/eureka
