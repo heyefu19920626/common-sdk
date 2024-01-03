@@ -1,0 +1,20 @@
+server:
+  port: 8002
+
+spring:
+  application:
+    name: producer
+
+eureka:
+  client:
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8001/eureka
+
+
+#必须开启这个，才能使用@FeignClient注解调用
+ribbon:
+  eureka:
+    enabled: true
+
+

@@ -5,19 +5,17 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.tang</groupId>
-        <artifactId>common-setting</artifactId>
+        <artifactId>sdk</artifactId>
         <version>1.0-SNAPSHOT</version>
-        <relativePath>common-setting/pom.xml</relativePath>
     </parent>
 
-    <artifactId>sdk</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>eureka</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>common-setting</module>
-        <module>base</module>
-        <module>ssh</module>
-        <module>task</module>
-        <module>eureka</module>
+        <module>eureka-server</module>
+        <module>producer</module>
+        <module>consumer</module>
     </modules>
+
+
 </project>
