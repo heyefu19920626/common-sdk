@@ -1,0 +1,11 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tang.task.domain.mapper.TaskMapper">
+    <insert id="addTask" parameterType="com.tang.task.domain.entity.Task" useGeneratedKeys="true" keyColumn="id"
+            keyProperty="id">
+        insert into task(name, status)
+        values (#{name}, #{status})
+    </insert>
+</mapper>

@@ -30,10 +30,16 @@
         <plugin.jar>3.3.0</plugin.jar>
         <mybatis.boot>3.0.3</mybatis.boot>
         <eureka>4.1.0</eureka>
+        <mysql.dirver>8.0.33</mysql.dirver>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql.dirver}</version>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
