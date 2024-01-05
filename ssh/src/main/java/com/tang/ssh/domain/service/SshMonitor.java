@@ -4,11 +4,11 @@
 
 package com.tang.ssh.domain.service;
 
+import com.tang.base.utils.CloseUtils;
+import com.tang.base.utils.ThreadUtils;
 import com.tang.ssh.domain.entity.SshParam;
 import com.tang.ssh.domain.exception.SshErrorCode;
 import com.tang.ssh.domain.exception.SshTangException;
-import com.tang.base.utils.CloseUtils;
-import com.tang.base.utils.ThreadUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.client.channel.ClientChannel;
 import org.apache.sshd.client.channel.ClientChannelEvent;
@@ -20,13 +20,14 @@ import java.io.OutputStream;
 import java.time.Duration;
 import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * ssh监视器
  * <p>
  * ssh通道，需要单独的线程去读取输出流
  * <p>
- * todo 超时机制, 并发调用的问题，需要持续输出的命令（top）
  *
  * @author TangAn
  * @version 0.1
@@ -49,6 +50,8 @@ public class SshMonitor implements Closeable, Runnable {
     private final InputStream error;
 
     private final StringBuilder cache = new StringBuilder();
+
+    private final Lock lock = new ReentrantLock();
 
     public SshMonitor(SshParam sshParam, ClientChannel channel) {
         this.sshParam = sshParam;
@@ -94,11 +97,17 @@ public class SshMonitor implements Closeable, Runnable {
     }
 
     public String sendCommand(String command, boolean async) throws SshTangException {
-        send(command);
-        if (async) {
-            return "";
+        check();
+        lock.lock();
+        try {
+            send(command);
+            if (async) {
+                return "";
+            }
+            return getEcho();
+        } finally {
+            lock.unlock();
         }
-        return getEcho();
     }
 
     private String getEcho() {
@@ -110,12 +119,17 @@ public class SshMonitor implements Closeable, Runnable {
     }
 
     public String sendCommand(int code) throws SshTangException {
-        send(code);
-        return getEcho();
+        check();
+        lock.lock();
+        try {
+            send(code);
+            return getEcho();
+        } finally {
+            lock.unlock();
+        }
     }
 
     private void send(int command) throws SshTangException {
-        check();
         try {
             out.write(command);
             out.flush();
@@ -134,7 +148,6 @@ public class SshMonitor implements Closeable, Runnable {
     }
 
     private void send(String command) throws SshTangException {
-        check();
         try {
             out.write(command.getBytes());
             out.write("\n".getBytes());
