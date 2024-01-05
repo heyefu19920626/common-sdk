@@ -22,9 +22,9 @@ eureka:
 
 
 #必须开启这个，才能使用@FeignClient注解调用
-ribbon:
-  eureka:
-    enabled: true
+#ribbon:
+#  eureka:
+#    enabled: true
 
 logging:
   level:

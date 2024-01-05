@@ -14,6 +14,8 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum TaskErrorCode implements IErrorCode {
+    CREATE_NAME_NOT_NULL("0003", "task.name.not.null"),
+    CREATE_MODULE_NOT_NULL("0002", "task.module.not.null"),
     CREATE_ERROR("0001", "task.create.error");
 
     private final String moduleErrorCode;

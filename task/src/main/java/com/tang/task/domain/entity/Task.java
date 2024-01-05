@@ -1,5 +1,8 @@
 package com.tang.task.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tang.base.context.Module;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -22,9 +25,14 @@ public class Task {
     private int id;
 
     /**
-     * 任务名称
+     * 任务名称, 长度需要小于25
      */
     private String name;
+
+    /**
+     * 任务所属模块
+     */
+    private Module module;
 
     /**
      * 任务状态
@@ -32,17 +40,27 @@ public class Task {
     private TaskStatus status;
 
     /**
+     * 任务结果
+     * <p>
+     * 有的任务会产生结果文件或信息
+     */
+    private String result;
+
+    /**
      * 创建时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
     private LocalDateTime createTime;
 
     /**
      * 更新时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
     private LocalDateTime updateTime;
 
     /**
      * 需要运行的具体任务
      */
-    private Runnable runnable;
+    @JsonIgnore
+    private ITaskOperate taskOperate;
 }
