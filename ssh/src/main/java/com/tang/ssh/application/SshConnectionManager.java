@@ -22,10 +22,13 @@ import org.apache.sshd.core.CoreModuleProperties;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * ssh管理器
@@ -38,6 +41,10 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class SshConnectionManager {
     private static final Map<String, SshConnection> CONN_POOL = new ConcurrentHashMap<>();
+
+    private static final Lock LOCK = new ReentrantLock();
+
+    private static final Map<String, Lock> HOST_LOCKS = new HashMap<>();
 
     /**
      * 根据连接参数创建ssh连接, 首先从连接池获取, 释放连接也请优先使用{@link SshConnectionManager#releaseSshConnection(SshConnection)}释放
@@ -79,11 +86,22 @@ public class SshConnectionManager {
         return String.format("%s@%s:%s", sshParam.getUsername(), sshParam.getHost(), sshParam.getPort());
     }
 
-    private synchronized static SshConnection create(SshParam sshParam, String connName) throws SshTangException {
+    private static SshConnection create(SshParam sshParam, String connName) throws SshTangException {
+        LOCK.lock();
+        log.info("get ssh manager lock");
         if (CONN_POOL.containsKey(connName)) {
-            return CONN_POOL.get(connName);
+            SshConnection sshConnection = CONN_POOL.get(connName);
+            LOCK.unlock();
+            return sshConnection;
         }
-        log.info("start create ssh({}) session.", connName);
+        if (!HOST_LOCKS.containsKey(connName)) {
+            HOST_LOCKS.put(connName, new ReentrantLock());
+        }
+        LOCK.unlock();
+        log.info("release ssh manager lock");
+        Lock lock = HOST_LOCKS.get(connName);
+        lock.lock();
+        log.info("start create ssh({}) session, get lock.", connName);
         SshClient client = createClient();
         ClientSession session;
         try {
@@ -100,6 +118,9 @@ public class SshConnectionManager {
             log.error("create ssh({}) session error.", connName, e);
             handleException(e.getMessage());
             throw new SshTangException(SshErrorCode.CREATE_SESSION_ERROR);
+        } finally {
+            lock.unlock();
+            log.info("release ssh({}) create lock.", connName);
         }
     }
 
@@ -117,7 +138,7 @@ public class SshConnectionManager {
         sessionByJumper.auth().verify();
         SshConnection sshConnection = new SshConnection(sshParam, client, sessionByJumper);
         CONN_POOL.put(connName, sshConnection);
-        log.info("finish create ssh({}) session.", connName);
+        log.info("finish create ssh({}) session by jumper.", connName);
         return sshConnection;
     }
 
