@@ -18,6 +18,7 @@ import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.channel.PtyChannelConfigurationHolder;
 import org.apache.sshd.sftp.client.SftpClient;
 import org.apache.sshd.sftp.client.SftpClientFactory;
+import org.apache.sshd.sftp.client.fs.SftpFileSystem;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -265,8 +266,25 @@ public class SshConnection implements Closeable {
         }
         log.info("create sftp connection.");
         try {
+            // 使用nio文件系统传输效率高的多
+            return createSftpByFileSystem();
+        } catch (IOException e) {
+            log.error("create sftp by sftp file system error.", e);
+        }
+        return createSftpByClient();
+    }
+
+    private SftpConnection createSftpByFileSystem() throws IOException {
+        SftpFileSystem sftpFileSystem = SftpClientFactory.instance().createSftpFileSystem(session);
+        sftpConnection = new SftpConnection(sftpFileSystem, null);
+        log.info("create sftp connection success by fs.");
+        return sftpConnection;
+    }
+
+    private SftpConnection createSftpByClient() {
+        try {
             SftpClient sftpClient = SftpClientFactory.instance().createSftpClient(session);
-            sftpConnection = new SftpConnection(sftpClient);
+            sftpConnection = new SftpConnection(null, sftpClient);
             log.info("create sftp connection success.");
             return sftpConnection;
         } catch (IOException e) {
