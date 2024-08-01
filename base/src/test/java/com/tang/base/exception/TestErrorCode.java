@@ -1,6 +1,7 @@
 package com.tang.base.exception;
 
 import com.tang.base.context.Module;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

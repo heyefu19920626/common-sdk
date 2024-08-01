@@ -21,20 +21,30 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
         <lombok>1.18.30</lombok>
         <hutool>5.8.23</hutool>
         <commons-io>2.15.1</commons-io>
         <commons-lang3>3.14.0</commons-lang3>
         <sshd>2.11.0</sshd>
         <archunit>1.2.1</archunit>
-        <plugin.jar>3.3.0</plugin.jar>
         <mybatis.boot>3.0.3</mybatis.boot>
         <eureka>4.1.0</eureka>
         <mysql.dirver>8.0.33</mysql.dirver>
+        <javassist>3.30.2-GA</javassist>
+
+
+        <plugin.jar>3.3.0</plugin.jar>
+        <plugin.assembly>3.7.1</plugin.assembly>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.javassist</groupId>
+                <artifactId>javassist</artifactId>
+                <version>${javassist}</version>
+            </dependency>
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
@@ -145,6 +155,12 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>${plugin.jar}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>${plugin.assembly}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

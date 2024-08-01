@@ -19,5 +19,7 @@
         <module>ssh</module>
         <module>task</module>
         <module>eureka</module>
+        <module>agent</module>
+        <module>agent-test</module>
     </modules>
 </project>
