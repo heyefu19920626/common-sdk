@@ -1,5 +1,6 @@
 package com.tang;
 
+import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -68,9 +69,12 @@ public class MethodAgentMain {
         instrumentation.addTransformer(new ClassFileTransformer() {
             public byte[] transform(ClassLoader l, String className, Class<?> c, ProtectionDomain pd, byte[] b) {
                 try {
-                    className = className.replace("/", ".");
-                    if (className.equals(TRANSFORM_CLASS)) {
+                    String classPath = className.replace("/", ".");
+                    if (classPath.equals(TRANSFORM_CLASS)) {
+                        System.out.println("get class: " + className);
                         final ClassPool classPool = ClassPool.getDefault();
+                        // 使用attach动态加载的时候，classPool是空的，需要把对应的类路径加进去
+                        classPool.insertClassPath(new ClassClassPath(c));
                         final CtClass clazz = classPool.get(TRANSFORM_CLASS);
 
                         for (CtMethod method : clazz.getMethods()) {
